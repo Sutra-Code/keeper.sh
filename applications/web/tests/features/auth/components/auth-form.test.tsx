@@ -252,7 +252,7 @@ describe("AuthForm", () => {
   });
 
   it("offers no registration link when the screen has no switch target", () => {
-    const { switchCta: _cta, switchPrompt: _prompt, switchTo: _to, ...closedCopy } = copy;
+    const closedCopy = { ...copy, switchCta: undefined, switchPrompt: undefined, switchTo: undefined };
     const markup = renderToStaticMarkup(<AuthForm capabilities={capabilities} copy={closedCopy} />);
 
     expect(markup).not.toContain("Register");
