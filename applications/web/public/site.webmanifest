@@ -1,6 +1,6 @@
 {
-  "name": "Keeper.sh",
-  "short_name": "Keeper",
+  "name": "Calendar · SutraCode",
+  "short_name": "Calendar",
   "start_url": "/",
   "icons": [
     {
@@ -16,7 +16,7 @@
       "purpose": "any"
     }
   ],
-  "theme_color": "#FAFAFA",
-  "background_color": "#FAFAFA",
+  "theme_color": "#F1F1EC",
+  "background_color": "#F1F1EC",
   "display": "standalone"
 }

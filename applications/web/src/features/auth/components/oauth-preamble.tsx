@@ -5,8 +5,9 @@ import Eye from "lucide-react/dist/esm/icons/eye";
 import EyeOff from "lucide-react/dist/esm/icons/eye-off";
 import CalendarPlus from "lucide-react/dist/esm/icons/calendar-plus";
 import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
-import KeeperLogo from "@/assets/keeper.svg?react";
+import SutraMark from "@/assets/sutra-mark.svg?react";
 import { BackButton } from "@/components/ui/primitives/back-button";
+import { SOURCE_CODE_URL } from "@/components/ui/primitives/source-notice";
 import { Heading2 } from "@/components/ui/primitives/heading";
 import { Text } from "@/components/ui/primitives/text";
 import { Divider } from "@/components/ui/primitives/divider";
@@ -47,7 +48,6 @@ const ACCESS_USES = [
   { icon: EyeOff, label: "Titles and guests stay private" },
 ];
 
-const SOURCE_CODE_URL = "https://github.com/ridafkih/keeper.sh";
 
 export function PermissionsList({ items }: { items: readonly string[] }) {
   return (
@@ -140,7 +140,7 @@ export function ProviderIconPair({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center justify-center gap-4 pb-4">
       <div className="size-14 rounded-xl border border-interactive-border shadow-xs p-3 flex items-center justify-center bg-background-inverse">
-        <KeeperLogo className="size-full rounded-lg text-foreground-inverse p-1" />
+        <SutraMark className="size-full rounded-lg text-foreground-inverse p-1" />
       </div>
       <ArrowLeftRight size={20} className="text-foreground-muted" />
       <div className="size-14 rounded-xl border border-interactive-border shadow-xs p-1 flex items-center justify-center">

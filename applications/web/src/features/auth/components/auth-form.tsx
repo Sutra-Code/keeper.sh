@@ -115,8 +115,8 @@ export function AuthForm({
         <PasskeyAutoFill authorizationSearch={authorizationSearch} />
       )}
       <div className="flex flex-col py-2">
-        <Heading2 as="span" className="text-center">{copy.heading}</Heading2>
-        <Text size="sm" tone="muted" align="center">{copy.subtitle}</Text>
+        <Heading2 as="span">{copy.heading}</Heading2>
+        <Text size="sm" tone="muted" align="left">{copy.subtitle}</Text>
       </div>
       {hasSocialProviders && (
         <>

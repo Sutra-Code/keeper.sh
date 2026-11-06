@@ -5,7 +5,6 @@ import { calendarJumpAtom } from "@/state/event-graph-hover";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import { cn } from "@/utils/cn";
-import { Text } from "@/components/ui/primitives/text";
 import { useEventsInRange } from "@/hooks/use-events";
 import { MonthGrid } from "./month-grid";
 import { WeekGrid } from "./week-grid";
@@ -25,7 +24,7 @@ type CalendarViewMode = "week" | "month";
 const VIEWS: CalendarViewMode[] = ["week", "month"];
 
 const navButton =
-  "flex size-8 items-center justify-center rounded-lg text-foreground-muted hover:bg-background-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "flex size-9 items-center justify-center rounded-xl bg-background text-foreground hover:bg-background-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function CalendarView() {
   const [view, setView] = useState<CalendarViewMode>("week");
@@ -77,20 +76,20 @@ export function CalendarView() {
 
   const toolbar = (
     <>
-      <Text as="span" size="base" tone="default" className="font-medium">
+      <span className="font-display text-xl font-medium tracking-tight text-foreground">
         {title}
-      </Text>
+      </span>
       <div className="flex items-center gap-3">
-        <div className="flex items-center rounded-lg bg-background-hover p-0.5">
+        <div className="flex items-center rounded-xl bg-background p-1">
           {VIEWS.map((mode) => (
             <button
               key={mode}
               type="button"
               onClick={() => switchView(mode)}
               className={cn(
-                "rounded-md px-2.5 py-1 text-sm font-medium capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "rounded-lg px-3 py-1 text-sm font-medium capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 mode === view
-                  ? "bg-background-elevated text-foreground shadow-xs"
+                  ? "bg-foreground text-background"
                   : "text-foreground-muted hover:text-foreground",
               )}
             >
@@ -101,7 +100,7 @@ export function CalendarView() {
         <div className="flex items-center gap-1">
           <button
             type="button"
-            className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-foreground-muted hover:bg-background-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 rounded-xl bg-background px-3 text-sm font-medium text-foreground hover:bg-background-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => setAnchor(new Date())}
           >
             Today

@@ -70,7 +70,7 @@ const buildMcpServerCard = (requestOrigin: string) => ({
   description: "Read and write your connected calendars from an AI agent.",
   websiteUrl: requestOrigin,
   repository: {
-    url: "https://github.com/ridafkih/keeper.sh",
+    url: "https://github.com/Sutra-Code/keeper.sh",
     source: "github",
   },
   icons: buildMcpServerIcons(requestOrigin),

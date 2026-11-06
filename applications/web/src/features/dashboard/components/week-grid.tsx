@@ -145,7 +145,7 @@ const DayHeaderCell = memo(function DayHeaderCell({
           <span
             className={cn(
               "flex size-6 items-center justify-center text-xs font-medium tabular-nums",
-              period === "today" ? "rounded-full bg-emerald-400 text-neutral-950" : "text-foreground",
+              period === "today" ? "rounded-full bg-foreground text-background" : "text-foreground",
             )}
           >
             {day.getDate()}
@@ -436,7 +436,7 @@ export function WeekGrid({ anchor, eventsByDay, onCenterDayChange, toolbar }: We
         style={{ scrollPaddingLeft: GUTTER_WIDTH }}
       >
         <div
-          className="sticky left-0 z-30 shrink-0 bg-background"
+          className="sticky left-0 z-30 shrink-0 bg-background-elevated"
           style={{ width: GUTTER_WIDTH, height: HOUR_HEIGHT * HOURS.length }}
         >
           {HOURS.slice(1).map((hour) => (

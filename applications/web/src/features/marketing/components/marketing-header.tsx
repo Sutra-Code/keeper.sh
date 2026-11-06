@@ -17,7 +17,7 @@ const navItem = tv({
 });
 
 const overlayNavItem = tv({
-  base: "font-lora font-medium leading-tight -tracking-[0.05em] text-4xl text-foreground-muted hover:text-foreground-hover aria-[current=page]:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg",
+  base: "font-display font-medium leading-tight -tracking-[0.03em] text-4xl text-foreground-muted hover:text-foreground-hover aria-[current=page]:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg",
 });
 import { NAV_ITEMS } from "./nav-items";
 

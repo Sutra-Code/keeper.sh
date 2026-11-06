@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/primitives/toast";
 import { resolveDashboardRedirect } from "@/lib/route-access-guards";
 import { CalendarView } from "@/features/dashboard/components/calendar-view";
 import { SidebarPageTransition } from "@/features/dashboard/components/sidebar-page-transition";
+import { SutraWordmark } from "@/components/ui/primitives/sutra-wordmark";
 
 export const Route = createFileRoute("/(dashboard)")({
   beforeLoad: ({ context }) => {
@@ -36,8 +37,8 @@ function DashboardLayout() {
   const overlayActive = useAtomValue(popoverOverlayAtom);
 
   return (
-    <div className="relative flex min-h-dvh justify-center lg:justify-start lg:gap-4 lg:p-4">
-      <div className="relative flex w-full max-w-sm shrink-0 flex-col gap-3 px-4 pb-(--sidebar-pad-b) pt-4 [--sidebar-pad-b:3rem] [--sidebar-pad-t:1.5rem] [--sidebar-pad-x:0.25rem] xs:pt-[min(6rem,25vh)] lg:h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:px-(--sidebar-pad-x) lg:pt-(--sidebar-pad-t)">
+    <div className="relative flex min-h-dvh justify-center lg:justify-start lg:gap-3 lg:bg-canvas lg:p-3">
+      <div className="relative flex w-full max-w-sm shrink-0 flex-col gap-3 px-4 pb-(--sidebar-pad-b) pt-4 [--sidebar-pad-b:3rem] [--sidebar-pad-t:1.5rem] [--sidebar-pad-x:0.5rem] lg:h-[calc(100dvh-1.5rem)] lg:overflow-y-auto lg:rounded-[1.75rem] lg:bg-background lg:px-(--sidebar-pad-x) lg:pt-(--sidebar-pad-t)">
         <LazyMotion features={loadMotionFeatures}>
           <AnimatePresence>
             {overlayActive && (
@@ -53,12 +54,13 @@ function DashboardLayout() {
         </LazyMotion>
         <SyncProvider />
         <Toaster />
+        <SutraWordmark className="mx-1 mb-6 shrink-0" />
         <SidebarPageTransition>
           <Outlet />
         </SidebarPageTransition>
       </div>
       {/* `isolate` keeps the calendar's sticky z-indices under the popover blur overlay (z-10). */}
-      <div className="hidden lg:flex lg:h-[calc(100dvh-2rem)] lg:min-w-0 lg:flex-1 lg:isolate">
+      <div className="hidden lg:flex lg:h-[calc(100dvh-1.5rem)] lg:min-w-0 lg:flex-1 lg:isolate">
         <CalendarView />
       </div>
     </div>

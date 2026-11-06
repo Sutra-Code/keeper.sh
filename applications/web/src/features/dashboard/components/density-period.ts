@@ -12,9 +12,9 @@ export const periodFill = tv({
   variants: {
     period: {
       past: "bg-background-hover border border-border-elevated",
-      today: "bg-emerald-400 border-transparent",
+      today: "bg-foreground border-transparent",
       future:
-        "bg-emerald-400 border-emerald-500 bg-[repeating-linear-gradient(-45deg,transparent_0_4px,var(--color-illustration-stripe)_4px_8px)]",
+        "bg-foreground-muted border-foreground-muted bg-[repeating-linear-gradient(-45deg,transparent_0_4px,var(--color-illustration-stripe)_4px_8px)]",
     },
   },
 });
@@ -24,8 +24,8 @@ export const periodWash = tv({
   variants: {
     period: {
       past: "[--wash:var(--color-background-hover)]",
-      today: "[--wash:color-mix(in_oklab,var(--color-emerald-400)_8%,transparent)]",
-      future: "[--wash:color-mix(in_oklab,var(--color-emerald-400)_8%,transparent)]",
+      today: "[--wash:color-mix(in_oklab,var(--color-foreground)_5%,transparent)]",
+      future: "[--wash:color-mix(in_oklab,var(--color-foreground)_5%,transparent)]",
     },
     edge: {
       flat: "transition-[background-color,opacity] data-active:bg-(--wash)",

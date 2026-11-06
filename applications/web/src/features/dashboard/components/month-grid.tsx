@@ -91,7 +91,7 @@ export function MonthGrid({ anchor, days, eventsByDay, toolbar }: MonthGridProps
                 <span
                   className={cn(
                     "flex size-6 items-center justify-center self-start text-xs font-medium tabular-nums",
-                    isToday && "rounded-full bg-emerald-400 text-neutral-950",
+                    isToday && "rounded-full bg-foreground text-background",
                     !isToday && inMonth && "text-foreground",
                     !isToday && !inMonth && "text-foreground-disabled",
                   )}

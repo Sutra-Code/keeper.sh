@@ -3,7 +3,7 @@ import { jsonLdScript, organizationSchema } from '../../lib/seo'
 import { Layout, LayoutItem } from '../../components/ui/shells/layout'
 import { MarketingHeader, MarketingHeaderActions, MarketingHeaderBranding, MarketingHeaderMenu, MarketingHeaderNav } from '../../features/marketing/components/marketing-header'
 import { MarketingFooter, MarketingFooterTagline, MarketingFooterNav, MarketingFooterNavGroup, MarketingFooterNavGroupLabel, MarketingFooterNavItem } from '../../features/marketing/components/marketing-footer'
-import KeeperLogo from "@/assets/keeper.svg?react";
+import SutraMark from "@/assets/sutra-mark.svg?react";
 import { ButtonText, LinkButton } from '../../components/ui/primitives/button';
 import { SessionSlot } from '../../components/ui/shells/session-slot';
 import HeartIcon from "lucide-react/dist/esm/icons/heart";
@@ -43,7 +43,7 @@ function MarketingLayout() {
     <>
       <MarketingHeader>
         <MarketingHeaderBranding label="Keeper.sh home">
-          <KeeperLogo className="size-7 shrink-0" aria-hidden="true" />
+          <SutraMark className="size-7 shrink-0" aria-hidden="true" />
         </MarketingHeaderBranding>
         <MarketingHeaderNav />
         <MarketingHeaderActions>

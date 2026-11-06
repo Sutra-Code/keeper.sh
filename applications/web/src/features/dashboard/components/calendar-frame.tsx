@@ -15,10 +15,10 @@ export function CalendarFrame({
   children,
 }: CalendarFrameProps) {
   return (
-    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-border-elevated shadow-xs">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[1.75rem] bg-background-elevated">
       <header className="shrink-0 [view-transition-name:calendar-header]">
         {/* View transitions lift named elements into a flat overlay where the frame no longer clips them, so the filled ones round their own corners to the frame's radius less its border. */}
-        <div className="flex items-center justify-between gap-3 rounded-t-[calc(var(--radius-2xl)-1px)] bg-background-elevated px-4 py-3 [view-transition-name:calendar-toolbar]">
+        <div className="flex items-center justify-between gap-3 rounded-t-[1.75rem] bg-background-elevated px-4 py-3 [view-transition-name:calendar-toolbar]">
           {toolbar}
         </div>
         <CalendarReauthStrip />
@@ -32,7 +32,7 @@ export function CalendarFrame({
         </div>
       </header>
       <div
-        className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-[calc(var(--radius-2xl)-1px)] [view-transition-name:calendar-grid]"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-[1.75rem] [view-transition-name:calendar-grid]"
         style={{ maxHeight: gridMaxHeight }}
       >
         {children}

@@ -149,7 +149,18 @@ export function NavigationMenuItemIcon({ children }: PropsWithChildren) {
   const variant = use(MenuVariantContext);
   const disabled = use(ItemDisabledContext);
 
-  return <div className={navigationMenuItemIconStyle({ variant, disabled })}>{children}</div>;
+  return (
+    <div
+      data-menu-icon
+      className={cn(
+        navigationMenuItemIconStyle({ variant, disabled }),
+        "grid size-8 place-items-center rounded-xl",
+        variant === "default" && "bg-background text-foreground",
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function NavigationMenuItemLabel({

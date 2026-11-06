@@ -1,12 +1,12 @@
 import { tv, type VariantProps } from "tailwind-variants/lite";
 
 export const navigationMenuStyle = tv({
-  base: "flex flex-col rounded-2xl p-0.5",
+  base: "flex flex-col rounded-[1.4rem] p-1",
   variants: {
     variant: {
-      default: "bg-background border border-interactive-border shadow-xs",
-      highlight: "relative before:absolute before:top-0.5 before:inset-x-0 before:h-px before:bg-linear-to-r before:mx-4 before:z-10 before:from-transparent before:to-transparent dark:bg-blue-700 dark:before:via-blue-400 bg-blue-500 before:via-blue-300",
-      attention: "relative bg-attention-background border border-attention-border shadow-xs attention-hatch before:absolute before:inset-0.5 before:rounded-[0.875rem] before:bg-attention-background before:pointer-events-none",
+      default: "bg-background-elevated",
+      highlight: "relative before:absolute before:top-0.5 before:inset-x-0 before:h-px before:bg-linear-to-r before:mx-4 before:z-10 before:from-transparent before:to-transparent bg-neutral-950 dark:bg-neutral-800 before:via-neutral-500",
+      attention: "relative bg-attention-background border border-attention-border shadow-xs attention-hatch before:absolute before:inset-1 before:rounded-2xl before:bg-attention-background before:pointer-events-none",
     },
   },
   defaultVariants: {
@@ -17,11 +17,11 @@ export const navigationMenuStyle = tv({
 export type MenuVariant = VariantProps<typeof navigationMenuStyle>["variant"];
 
 export const navigationMenuItemStyle = tv({
-  base: "rounded-[0.875rem] flex items-center gap-3 p-3.5 sm:p-3 w-full",
+  base: "rounded-2xl flex min-h-11 items-center gap-3 p-1.5 pl-3 pr-3 has-data-menu-icon:pl-1.5 w-full",
   variants: {
     variant: {
       default: "",
-      highlight: "bg-linear-to-t dark:to-blue-600 dark:from-blue-700 to-blue-500 from-blue-600",
+      highlight: "bg-linear-to-t from-neutral-950 to-neutral-800 dark:from-neutral-800 dark:to-neutral-700",
       attention: "relative",
     },
     interactive: {

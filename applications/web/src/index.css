@@ -19,6 +19,15 @@
 /* Declared last so `event-narrow:` utilities outrank the height bands on the same element. */
 @custom-variant event-narrow (@container event-card (width < 72px));
 
+/* Textura del panel de marca, la misma del CRM. */
+@utility tex-dust {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--ui-foreground) 22%, transparent) 1px,
+    transparent 1.6px
+  );
+  background-size: 11px 9px;
+}
+
 html {
   @apply w-full min-h-full bg-background overflow-x-hidden;
   -webkit-font-smoothing: antialiased;
@@ -79,12 +88,14 @@ html {
 
 :root {
   --ui-foreground: var(--color-neutral-950);
-  --ui-background: var(--color-neutral-50);
+  --ui-canvas: var(--color-neutral-200);
+  --ui-well: #ecece7;
+  --ui-background: var(--color-neutral-100);
   --ui-background-inverse: var(--ui-foreground);
   --ui-foreground-inverse: var(--ui-background);
-  --ui-interactive-border: var(--color-neutral-300);
-  --ui-foreground-muted: var(--color-neutral-500);
-  --ui-foreground-disabled: var(--color-neutral-300);
+  --ui-interactive-border: var(--color-neutral-400);
+  --ui-foreground-muted: var(--color-neutral-600);
+  --ui-foreground-disabled: var(--color-neutral-400);
   --ui-foreground-hover: color-mix(
     in srgb,
     var(--ui-foreground),
@@ -100,7 +111,7 @@ html {
     var(--ui-foreground-inverse),
     transparent 40%
   );
-  --ui-background-elevated: var(--color-white);
+  --ui-background-elevated: var(--color-neutral-50);
   --ui-border-elevated: var(--color-neutral-300);
   /* Faded so the calendar's hour lines read as a quieter layer under its column rules. */
   --ui-border-hour: color-mix(in oklab, var(--ui-border-elevated) 45%, transparent);
@@ -110,7 +121,7 @@ html {
     var(--ui-foreground),
     var(--ui-background) 96.125%
   );
-  --ui-destructive: var(--color-red-700);
+  --ui-destructive: #b42318;
   --ui-destructive-background: var(--color-red-50);
   --ui-destructive-border: var(--color-red-200);
   --ui-destructive-background-hover: var(--color-red-100);
@@ -119,15 +130,15 @@ html {
   --ui-attention-border: color-mix(in oklab, var(--color-amber-600), transparent 72%);
   --ui-attention-background-hover: var(--color-amber-100);
   --ui-attention-hatch: color-mix(in oklab, var(--color-amber-500), transparent 88%);
-  --ui-ring: var(--color-blue-500);
-  --ui-template: var(--color-purple-600);
+  --ui-ring: var(--color-neutral-950);
+  --ui-template: var(--color-neutral-700);
   --ui-template-muted: color-mix(in srgb, var(--ui-template), transparent 50%);
 }
 
 @font-face {
-  font-family: "Geist Sans";
-  src: url("/assets/fonts/Geist-variable.woff2") format("woff2");
-  font-weight: 100 900;
+  font-family: "Manrope";
+  src: url("/assets/fonts/manrope-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 800;
   font-display: swap;
 }
 
@@ -139,15 +150,17 @@ html {
 }
 
 @font-face {
-  font-family: "Lora";
-  src: url("/assets/fonts/Lora-variable.woff2") format("woff2");
-  font-weight: 100 900;
+  font-family: "Space Grotesk";
+  src: url("/assets/fonts/space-grotesk-latin-wght-normal.woff2") format("woff2");
+  font-weight: 300 700;
   font-display: swap;
 }
 
 @theme {
   --color-foreground: var(--ui-foreground);
   --color-background: var(--ui-background);
+  --color-canvas: var(--ui-canvas);
+  --color-well: var(--ui-well);
   --color-background-inverse: var(--ui-background-inverse);
   --color-foreground-inverse: var(--ui-foreground-inverse);
   --color-interactive-border: var(--ui-interactive-border);
@@ -173,8 +186,22 @@ html {
   --color-template: var(--ui-template);
   --color-template-muted: var(--ui-template-muted);
 
-  --font-sans: "Geist Sans", system-ui, sans-serif;
-  --font-lora: "Lora", Georgia, serif;
+  /* Marca SutraCode: monocroma, tinta sobre papel calido. */
+  --color-neutral-50: #fafaf8;
+  --color-neutral-100: #f1f1ec;
+  --color-neutral-200: #e7e7e1;
+  --color-neutral-300: #deded9;
+  --color-neutral-400: #bcbcb5;
+  --color-neutral-500: #8b8b85;
+  --color-neutral-600: #62625e;
+  --color-neutral-700: #444441;
+  --color-neutral-800: #353535;
+  --color-neutral-900: #1c1c1b;
+  --color-neutral-950: #111111;
+
+  --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Manrope", system-ui, sans-serif;
+  --tracking-tighter: -0.02em;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
   --breakpoint-xs: 28rem;
@@ -231,11 +258,13 @@ html {
   }
 
   :root {
-    --ui-foreground: var(--color-neutral-100);
+    --ui-foreground: var(--color-neutral-50);
+    --ui-canvas: #0a0a09;
+    --ui-well: var(--color-neutral-900);
     --ui-background: var(--color-neutral-950);
     --ui-background-inverse: var(--ui-foreground);
     --ui-foreground-inverse: var(--ui-background);
-    --ui-interactive-border: var(--color-neutral-800);
+    --ui-interactive-border: var(--color-neutral-700);
     --ui-foreground-muted: var(--color-neutral-400);
     --ui-foreground-disabled: var(--color-neutral-600);
     --ui-foreground-hover: color-mix(
@@ -293,8 +322,8 @@ html {
       var(--color-amber-500),
       var(--ui-background) 80%
     );
-    --ui-ring: var(--color-blue-400);
-    --ui-template: var(--color-purple-400);
+    --ui-ring: var(--color-neutral-50);
+    --ui-template: var(--color-neutral-300);
     --ui-template-muted: color-mix(
       in srgb,
       var(--ui-template),

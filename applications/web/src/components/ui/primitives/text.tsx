@@ -16,7 +16,7 @@ const text = tv({
       inverse: "text-foreground-inverse",
       inverseMuted: "text-foreground-inverse-muted",
       default: "text-foreground",
-      danger: "text-red-500",
+      danger: "text-destructive",
       attention: "text-attention",
     },
     align: {

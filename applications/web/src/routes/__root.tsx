@@ -43,7 +43,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Keeper.sh" },
+      { title: "Calendar · SutraCode" },
     ],
   }),
 });
@@ -85,12 +85,12 @@ function RootComponent() {
         {viteAssets?.headScripts.map((script, index) => (
           <ViteScriptTag key={script.src ?? index} script={script} />
         ))}
-        <link rel="icon" type="image/svg+xml" href="/keeper.svg" media="(prefers-color-scheme: light)" />
-        <link rel="icon" type="image/svg+xml" href="/keeper-dark.svg" media="(prefers-color-scheme: dark)" />
+        <link rel="icon" type="image/svg+xml" href="/sutracode.svg" media="(prefers-color-scheme: light)" />
+        <link rel="icon" type="image/svg+xml" href="/sutracode-dark.svg" media="(prefers-color-scheme: dark)" />
         <link rel="apple-touch-icon" href="/180x180-light-on-dark.png" />
         <link rel="manifest" href="/site.webmanifest" />
-        <link rel="preload" href="/assets/fonts/Geist-variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/assets/fonts/Lora-variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/assets/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/assets/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>
       <body>
         <div id="root">

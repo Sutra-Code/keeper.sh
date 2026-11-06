@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useSWRConfig } from "swr";
-import KeeperLogo from "@/assets/keeper.svg?react";
 import { Button, ButtonText } from "@/components/ui/primitives/button";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { isEventsKey } from "@/lib/swr";
@@ -91,9 +90,6 @@ export function Onboarding({ state }: { state: OnboardingState }) {
   return (
     <div className="flex flex-col gap-1.5">
       <OnboardingStepContent state={state} />
-      <div className="pt-8 flex justify-center">
-        <KeeperLogo className="size-8 text-border-elevated self-center" />
-      </div>
     </div>
   );
 }

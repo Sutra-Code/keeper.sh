@@ -25,8 +25,8 @@ import {
   formatRefreshSummary,
   refreshCalendarsResponseSchema,
 } from "@/features/dashboard/components/refresh-summary";
-import KeeperLogo from "@/assets/keeper.svg?react";
 import { EventGraph } from "@/features/dashboard/components/event-graph";
+import { SourceNotice } from "@/components/ui/primitives/source-notice";
 import { ProviderIcon } from "@/components/ui/primitives/provider-icon";
 import type { CalendarAccount, CalendarSource } from "@/types/api";
 import {
@@ -169,9 +169,7 @@ function Home() {
         </NavigationMenu>
         <AccountsMenu onLogout={handleLogout} />
       </div>
-      <div className="pt-8 flex justify-center">
-        <KeeperLogo className="size-8 text-border-elevated self-center" />
-      </div>
+      <SourceNotice className="px-2 pt-4 text-center" />
     </div>
   );
 }

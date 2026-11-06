@@ -12,7 +12,7 @@ const headingTile = tv({
       neutral:
         "bg-neutral-100 text-neutral-600 inset-ring-neutral-600/15 dark:bg-neutral-800 dark:text-neutral-300 dark:inset-ring-neutral-300/15",
       success:
-        "bg-emerald-50 text-emerald-500 inset-ring-emerald-500/20 dark:bg-emerald-500/15 dark:text-emerald-400 dark:inset-ring-emerald-400/20",
+        "bg-background-hover text-foreground inset-ring-foreground/20",
     },
   },
 });

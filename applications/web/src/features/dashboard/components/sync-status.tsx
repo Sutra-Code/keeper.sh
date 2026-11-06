@@ -28,7 +28,7 @@ export function SyncProgressCircle({ percent }: { percent: number }) {
         fill="none"
         strokeWidth={2}
         strokeLinecap="round"
-        className="stroke-emerald-400 transition-[stroke-dashoffset] duration-300 ease-out motion-reduce:transition-none"
+        className="stroke-foreground transition-[stroke-dashoffset] duration-300 ease-out motion-reduce:transition-none"
         style={{
           strokeDasharray: circumference,
           strokeDashoffset,

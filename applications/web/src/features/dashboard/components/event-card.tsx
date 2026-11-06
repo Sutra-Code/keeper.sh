@@ -110,7 +110,7 @@ export const EventCard = memo(function EventCard({
   past,
   layout = "list",
   style,
-  color = "blue",
+  color = "ink",
 }: EventCardProps) {
   const title = event.title ?? event.calendarName;
   const classes = cn(eventCard({ layout, past }), EVENT_COLORS[color]);
@@ -174,7 +174,7 @@ const eventPill = tv({
   },
 });
 
-export const EventPill = memo(function EventPill({ event, past, color = "blue" }: EventPillProps) {
+export const EventPill = memo(function EventPill({ event, past, color = "ink" }: EventPillProps) {
   return (
     <div className={cn(eventPill({ past }), EVENT_COLORS[color])} style={{ height: EVENT_PILL_HEIGHT_PX }}>
       <EventText as="span" size="xs" className="min-w-0 truncate font-medium">
