@@ -90,10 +90,7 @@ const { auth, capabilities: authCapabilities } = createAuth({
   commercialMode: env.COMMERCIAL_MODE ?? false,
   polarAccessToken: env.POLAR_ACCESS_TOKEN,
   polarMode: env.POLAR_MODE,
-  googleClientId: env.GOOGLE_CLIENT_ID,
-  googleClientSecret: env.GOOGLE_CLIENT_SECRET,
-  microsoftClientId: env.MICROSOFT_CLIENT_ID,
-  microsoftClientSecret: env.MICROSOFT_CLIENT_SECRET,
+  // Registration is closed: Google and Microsoft credentials connect calendars (buildOAuthConfigs), they never sign anyone in.
   oidcIssuerUrl: env.OIDC_ISSUER_URL,
   oidcClientId: env.OIDC_CLIENT_ID,
   oidcClientSecret: env.OIDC_CLIENT_SECRET,

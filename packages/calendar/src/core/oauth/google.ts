@@ -224,9 +224,12 @@ const createGoogleOAuthService = (
     url.searchParams.set("response_type", "code");
     url.searchParams.set("scope", scopes.join(" "));
     url.searchParams.set("access_type", "offline");
-    url.searchParams.set("prompt", "consent");
+    // Without a hint this is a new connection: the picker lets the user add another Google account.
     if (options.loginHint) {
+      url.searchParams.set("prompt", "consent");
       url.searchParams.set("login_hint", options.loginHint);
+    } else {
+      url.searchParams.set("prompt", "select_account consent");
     }
     url.searchParams.set("state", state);
 

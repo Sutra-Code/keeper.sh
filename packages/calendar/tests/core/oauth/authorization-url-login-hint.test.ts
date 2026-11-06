@@ -49,12 +49,12 @@ const buildMicrosoftUrl = async (loginHint?: string): Promise<URL> => {
 };
 
 describe("google getAuthorizationUrl", () => {
-  it("leaves a first connection untouched", async () => {
+  it("lets a new connection choose which Google account to add", async () => {
     const { searchParams } = await buildGoogleUrl();
 
     expect(searchParams.get("login_hint")).toBeNull();
     expect(searchParams.get("access_type")).toBe("offline");
-    expect(searchParams.get("prompt")).toBe("consent");
+    expect(searchParams.get("prompt")).toBe("select_account consent");
   });
 
   it("pins a reconnect to the account that broke", async () => {
