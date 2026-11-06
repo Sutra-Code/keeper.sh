@@ -60,9 +60,9 @@ export type AuthScreenCopy = {
   subtitle: string;
   oauthActionLabel: string;
   submitLabel: string;
-  switchPrompt: string;
-  switchCta: string;
-  switchTo: "/login" | "/register";
+  switchPrompt?: string;
+  switchCta?: string;
+  switchTo?: "/login" | "/register";
   action: "signIn" | "signUp";
 };
 
@@ -106,7 +106,7 @@ export function AuthForm({
 }) {
   const hasSocialProviders = getEnabledSocialProviders(capabilities).length > 0;
   const switchSearch = resolveSwitchSearch(authorizationSearch);
-  const switchHref = resolvePathWithSearch(copy.switchTo, switchSearch);
+  const switchHref = copy.switchTo && resolvePathWithSearch(copy.switchTo, switchSearch);
   const hideCredentialForm = capabilities.disableLocalAuth === true;
 
   return (
@@ -138,7 +138,7 @@ export function AuthForm({
       )}
       <div className="flex flex-col gap-1.5">
         <AuthError />
-        {!hideCredentialForm && (
+        {!hideCredentialForm && switchHref && (
           <AuthSwitchPrompt>
             {copy.switchPrompt}{" "}
             <ExternalTextLink href={switchHref}>

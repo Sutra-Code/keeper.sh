@@ -17,9 +17,6 @@ const copy: AuthScreenCopy = {
   subtitle: "Sign in to your account",
   oauthActionLabel: "Sign in",
   submitLabel: "Sign in",
-  switchPrompt: "Don't have an account yet?",
-  switchCta: "Register",
-  switchTo: "/register",
   action: "signIn",
 };
 

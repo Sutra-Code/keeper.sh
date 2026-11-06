@@ -1,37 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AuthForm, type AuthScreenCopy } from "@/features/auth/components/auth-form";
-import { fetchAuthCapabilitiesWithApi } from "@/lib/auth-capabilities";
-import {
-  getMcpAuthorizationSearch,
-  toStringSearchParams,
-} from "@/lib/mcp-auth-flow";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { toStringSearchParams } from "@/lib/mcp-auth-flow";
 
+// Registro cerrado: las cuentas las crea un administrador.
 export const Route = createFileRoute("/(auth)/register")({
-  loader: ({ context }) => fetchAuthCapabilitiesWithApi(context.fetchApi),
-  component: RegisterPage,
   validateSearch: toStringSearchParams,
+  beforeLoad: ({ search }) => {
+    throw redirect({ search, to: "/login" });
+  },
 });
-
-const copy: AuthScreenCopy = {
-  heading: "Create your account",
-  subtitle: "Create your account",
-  oauthActionLabel: "Sign up",
-  submitLabel: "Sign up",
-  switchPrompt: "Already have an account?",
-  switchCta: "Sign in",
-  switchTo: "/login",
-  action: "signUp",
-};
-
-function RegisterPage() {
-  const capabilities = Route.useLoaderData();
-  const search = Route.useSearch();
-
-  return (
-    <AuthForm
-      capabilities={capabilities}
-      copy={copy}
-      authorizationSearch={getMcpAuthorizationSearch(search) ?? undefined}
-    />
-  );
-}

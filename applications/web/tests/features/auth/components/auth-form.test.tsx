@@ -251,6 +251,14 @@ describe("AuthForm", () => {
     expect(markup).not.toContain("Register");
   });
 
+  it("offers no registration link when the screen has no switch target", () => {
+    const { switchCta: _cta, switchPrompt: _prompt, switchTo: _to, ...closedCopy } = copy;
+    const markup = renderToStaticMarkup(<AuthForm capabilities={capabilities} copy={closedCopy} />);
+
+    expect(markup).not.toContain("Register");
+    expect(markup).not.toContain("/register");
+  });
+
   it("keeps email autofill semantics for registration", () => {
     const markup = renderToStaticMarkup(
       <AuthForm
