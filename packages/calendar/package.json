@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./microsoft-apps": "./src/core/oauth/microsoft-apps.ts",
     "./caldav": "./src/providers/caldav/index.ts",
     "./google": "./src/providers/google/index.ts",
     "./outlook": "./src/providers/outlook/index.ts",

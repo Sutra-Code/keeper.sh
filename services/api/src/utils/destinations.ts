@@ -26,7 +26,9 @@ const exchangeCodeForTokens = (
   provider: string,
   code: string,
   callbackUrl: string,
-): Promise<OAuthTokens> => getOAuthProviderOrThrow(provider).exchangeCodeForTokens(code, callbackUrl);
+  microsoftApp?: string | null,
+): Promise<OAuthTokens> =>
+  getOAuthProviderOrThrow(provider).exchangeCodeForTokens(code, callbackUrl, microsoftApp);
 
 const fetchUserInfo = (provider: string, accessToken: string): Promise<OAuthUserInfo> =>
   getOAuthProviderOrThrow(provider).fetchUserInfo(accessToken);

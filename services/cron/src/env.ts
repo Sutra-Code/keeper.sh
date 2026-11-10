@@ -1,4 +1,5 @@
 import arkenv from "arkenv";
+import { withPrimaryMicrosoftApp } from "@keeper.sh/calendar/microsoft-apps";
 
 const schema = {
   PRIVATE_RESOLUTION_WHITELIST: "string?",
@@ -37,4 +38,5 @@ const schema = {
 } as const;
 
 export { schema };
-export default arkenv(schema);
+// Named Microsoft apps (MICROSOFT_<KEY>_CLIENT_ID) also open the MICROSOFT_CLIENT_ID gates.
+export default withPrimaryMicrosoftApp(arkenv(schema));

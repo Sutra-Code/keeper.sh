@@ -19,6 +19,8 @@ interface AuthorizationUrlOptions {
   sourceCredentialId?: string;
   /** Pins the consent screen to one account, so a reconnect cannot reauthorize the wrong one. */
   loginHint?: string;
+  /** Key of the Microsoft app registration to use; ignored by other providers. */
+  microsoftApp?: string;
 }
 
 interface NormalizedUserInfo {
@@ -35,7 +37,11 @@ interface OAuthTokens {
 
 interface OAuthProvider {
   getAuthorizationUrl: (userId: string, options: AuthorizationUrlOptions) => Promise<string>;
-  exchangeCodeForTokens: (code: string, callbackUrl: string) => Promise<OAuthTokens>;
+  exchangeCodeForTokens: (
+    code: string,
+    callbackUrl: string,
+    microsoftApp?: string | null,
+  ) => Promise<OAuthTokens>;
   fetchUserInfo: (accessToken: string) => Promise<NormalizedUserInfo>;
   refreshAccessToken: (refreshToken: string) => Promise<OAuthTokens>;
   hasRequiredScopes: (grantedScopes: string) => boolean;

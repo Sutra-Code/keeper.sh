@@ -4,6 +4,7 @@ const sourceAuthorizeQuerySchema = type({
   provider: "string",
   "credentialId?": "string",
   "accountId?": "string",
+  "app?": "string",
   "+": "reject",
 });
 type SourceAuthorizeQuery = typeof sourceAuthorizeQuerySchema.infer;

@@ -8,6 +8,7 @@ interface PendingState {
   userId: string;
   destinationId: string | null;
   sourceCredentialId: string | null;
+  microsoftApp?: string | null;
   expiresAt: number;
 }
 
@@ -15,11 +16,14 @@ interface ValidatedState {
   userId: string;
   destinationId: string | null;
   sourceCredentialId: string | null;
+  /** Which Microsoft app registration issued the authorization; null for other providers. */
+  microsoftApp: string | null;
 }
 
 interface GenerateStateOptions {
   destinationId?: string;
   sourceCredentialId?: string;
+  microsoftApp?: string;
 }
 
 interface OAuthStateStore {
@@ -40,6 +44,7 @@ const generateState = async (
   const pendingState: PendingState = {
     destinationId: options?.destinationId ?? null,
     expiresAt: Date.now() + STATE_EXPIRY_MINUTES * MS_PER_MINUTE,
+    microsoftApp: options?.microsoftApp ?? null,
     sourceCredentialId: options?.sourceCredentialId ?? null,
     userId,
   };
@@ -65,6 +70,7 @@ const validateState = async (
 
   return {
     destinationId: entry.destinationId,
+    microsoftApp: entry.microsoftApp ?? null,
     sourceCredentialId: entry.sourceCredentialId,
     userId: entry.userId,
   };

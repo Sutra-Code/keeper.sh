@@ -19,7 +19,7 @@ import { importOAuthAccountCalendars } from "@/utils/oauth-sources";
 import { noteUserMilestone } from "@/utils/user-milestones";
 import { resolveProviderFailureReason } from "@/utils/oauth-callback-failure";
 import { baseUrl } from "@/context";
-import env from "@/env";
+import { findMicrosoftApp, loadMicrosoftApps } from "@keeper.sh/calendar";
 import { buildMicrosoftAdminConsentUrl } from "@/utils/microsoft-admin-consent";
 import type { OAuthConnectFailureReason } from "@keeper.sh/data-schemas";
 
@@ -31,18 +31,26 @@ type CallbackFailureStage = "query" | "provider" | "state" | "token_exchange" | 
 const buildCallbackUrl = (provider: string): string =>
   new URL(`/api/sources/callback/${provider}`, baseUrl).toString();
 
-const resolveApprovalUrl = (reason: OAuthConnectFailureReason): string | null => {
-  if (reason !== "admin-approval-required" || !env.MICROSOFT_CLIENT_ID) {
+const resolveApprovalUrl = (
+  reason: OAuthConnectFailureReason,
+  microsoftApp: string | null,
+): string | null => {
+  if (reason !== "admin-approval-required") {
+    return null;
+  }
+  const app = findMicrosoftApp(loadMicrosoftApps(), microsoftApp);
+  if (!app) {
     return null;
   }
   return buildMicrosoftAdminConsentUrl({
     callbackUrl: buildCallbackUrl("outlook"),
-    clientId: env.MICROSOFT_CLIENT_ID,
+    clientId: app.clientId,
+    tenantId: app.tenantId,
   });
 };
 
-const buildErrorUrl = (reason: OAuthConnectFailureReason): URL => {
-  const approvalUrl = resolveApprovalUrl(reason);
+const buildErrorUrl = (reason: OAuthConnectFailureReason, microsoftApp: string | null = null): URL => {
+  const approvalUrl = resolveApprovalUrl(reason, microsoftApp);
   return buildRedirectUrl("/dashboard/integrations", baseUrl, {
     reason,
     source: "error",
@@ -107,8 +115,9 @@ const rejectCallback = (
   stage: CallbackFailureStage,
   message: string,
   reason: OAuthConnectFailureReason = "unknown",
+  microsoftApp: string | null = null,
 ): Response => {
-  const errorUrl = buildErrorUrl(reason);
+  const errorUrl = buildErrorUrl(reason, microsoftApp);
   widelog.errorFields(new OAuthError(message, errorUrl), { slug: "oauth-callback-failed" });
   return redirectAsFailure(stage, errorUrl);
 };
@@ -117,10 +126,11 @@ const importAccount = async (
   provider: string,
   userId: string,
   code: string,
+  microsoftApp: string | null,
   enterStage: (stage: CallbackFailureStage) => void,
 ): Promise<string> => {
   enterStage("token_exchange");
-  const tokens = await exchangeCodeForTokens(provider, code, buildCallbackUrl(provider));
+  const tokens = await exchangeCodeForTokens(provider, code, buildCallbackUrl(provider), microsoftApp);
 
   if (!tokens.refresh_token) {
     throw new OAuthError("No refresh token", buildErrorUrl("unknown"));
@@ -184,7 +194,7 @@ const GET = withWideEvent(async ({ request, params }) => {
 
   if (url.searchParams.has("error")) {
     const reason = recordProviderError(url.searchParams);
-    return rejectCallback("provider", "OAuth error from provider", reason);
+    return rejectCallback("provider", "OAuth error from provider", reason, validatedState?.microsoftApp ?? null);
   }
 
   if (!code || !state) {
@@ -195,11 +205,11 @@ const GET = withWideEvent(async ({ request, params }) => {
     return rejectCallback("state", "Invalid or expired state", "expired");
   }
 
-  const { userId, sourceCredentialId } = validatedState;
+  const { userId, sourceCredentialId, microsoftApp } = validatedState;
   let stage: CallbackFailureStage = "token_exchange";
 
   try {
-    const accountId = await importAccount(provider, userId, code, (nextStage) => {
+    const accountId = await importAccount(provider, userId, code, microsoftApp, (nextStage) => {
       stage = nextStage;
     });
     noteUserMilestone(userId, "first_calendar_connected");
@@ -223,7 +233,7 @@ const GET = withWideEvent(async ({ request, params }) => {
     }
 
     labelFailure(error, { slug: "unclassified" });
-    return redirectAsFailure(stage, buildErrorUrl(resolveImportFailureReason(providerErrorCode)));
+    return redirectAsFailure(stage, buildErrorUrl(resolveImportFailureReason(providerErrorCode), microsoftApp));
   }
 });
 

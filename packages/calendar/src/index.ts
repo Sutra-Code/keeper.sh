@@ -342,6 +342,12 @@ export {
   type MicrosoftOAuthService,
 } from "./core/oauth/microsoft";
 export {
+  loadMicrosoftApps,
+  findMicrosoftApp,
+  readRefreshToken as readMicrosoftRefreshToken,
+  type MicrosoftApp,
+} from "./core/oauth/microsoft-apps";
+export {
   generateState,
   validateState,
 } from "./core/oauth/state";

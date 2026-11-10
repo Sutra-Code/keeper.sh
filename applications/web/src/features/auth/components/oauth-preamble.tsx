@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ReactNode, SubmitEvent } from "react";
 import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
 import Check from "lucide-react/dist/esm/icons/check";
@@ -21,6 +22,8 @@ import {
 } from "@/components/ui/composites/navigation-menu/navigation-menu-items";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { providerIcons } from "@/lib/providers";
+import { useMicrosoftApps } from "@/hooks/use-microsoft-apps";
+import type { MicrosoftApp } from "@/hooks/use-microsoft-apps";
 
 type Provider = "google" | "outlook";
 
@@ -65,10 +68,12 @@ export function PermissionsList({ items }: { items: readonly string[] }) {
 interface PreambleLayoutProps {
   provider: Provider;
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
+  /** Rendered just above the continue button, inside the form. */
+  picker?: ReactNode;
   children?: ReactNode;
 }
 
-function PreambleLayout({ provider, onSubmit, children }: PreambleLayoutProps) {
+function PreambleLayout({ provider, onSubmit, picker, children }: PreambleLayoutProps) {
   const { label, heading, company, accountNotice } = PROVIDER_PREAMBLES[provider];
   return (
     <>
@@ -102,6 +107,7 @@ function PreambleLayout({ provider, onSubmit, children }: PreambleLayoutProps) {
       )}
       <Divider />
       <form onSubmit={onSubmit} className="contents">
+        {picker}
         <div className="flex items-stretch gap-2">
           <BackButton variant="border" size="standard" className="self-stretch justify-center px-3.5" />
           <Button type="submit" className="grow justify-center">
@@ -124,15 +130,63 @@ interface LinkOAuthPreambleProps {
   provider: Provider;
 }
 
+interface MicrosoftAppPickerProps {
+  apps: MicrosoftApp[];
+  selected: string;
+  onSelect: (key: string) => void;
+}
+
+/** One Microsoft app per tenant: the user picks the organization the account belongs to. */
+function MicrosoftAppPicker({ apps, selected, onSelect }: MicrosoftAppPickerProps) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="pb-2">
+        <Text size="sm" tone="muted" align="left">Organization of the account</Text>
+      </legend>
+      {apps.map((app) => (
+        <label
+          key={app.key}
+          className="flex items-center gap-2 rounded-xl border border-interactive-border px-3 py-2 cursor-pointer has-checked:bg-background-hover"
+        >
+          <input
+            type="radio"
+            name="microsoft-app"
+            value={app.key}
+            checked={selected === app.key}
+            onChange={() => onSelect(app.key)}
+          />
+          <Text size="sm" align="left">{app.label}</Text>
+        </label>
+      ))}
+    </fieldset>
+  );
+}
+
 export function LinkOAuthPreamble({ provider }: LinkOAuthPreambleProps) {
+  const { data: microsoftApps } = useMicrosoftApps(provider === "outlook");
+  const [chosenApp, setChosenApp] = useState<string | null>(null);
+  const apps = microsoftApps ?? [];
+  const selectedApp = chosenApp ?? apps[0]?.key ?? null;
+  const showPicker = provider === "outlook" && apps.length > 1;
+
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     track(ANALYTICS_EVENTS.oauth_authorize_started, { oauth_is_reconnect: false, provider_name: provider });
-    window.location.href = `/api/sources/authorize?provider=${provider}`;
+    const search = new URLSearchParams({ provider });
+    if (showPicker && selectedApp) {
+      search.set("app", selectedApp);
+    }
+    window.location.href = `/api/sources/authorize?${search.toString()}`;
   };
 
   return (
-    <PreambleLayout provider={provider} onSubmit={handleSubmit} />
+    <PreambleLayout
+      provider={provider}
+      onSubmit={handleSubmit}
+      picker={showPicker && selectedApp
+        ? <MicrosoftAppPicker apps={apps} selected={selectedApp} onSelect={setChosenApp} />
+        : null}
+    />
   );
 }
 

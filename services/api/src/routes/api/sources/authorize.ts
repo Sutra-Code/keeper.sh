@@ -1,4 +1,5 @@
 import { calendarAccountsTable, oauthCredentialsTable } from "@keeper.sh/database/schema";
+import { findMicrosoftApp, loadMicrosoftApps, readMicrosoftRefreshToken } from "@keeper.sh/calendar";
 import { and, eq } from "drizzle-orm";
 import { withAuth, withWideEvent } from "@/utils/middleware";
 import { ErrorResponse } from "@/utils/responses";
@@ -51,9 +52,17 @@ const resolveReconnectTarget = async (
   return { credentialId: account.credentialId, loginHint: email };
 };
 
-const userOwnsSourceCredential = async (userId: string, credentialId: string): Promise<boolean> => {
+interface OwnedCredential {
+  /** The Microsoft app that issued the stored token, so a reconnect goes back to the same one. */
+  microsoftApp: string | null;
+}
+
+const findOwnedSourceCredential = async (
+  userId: string,
+  credentialId: string,
+): Promise<OwnedCredential | null> => {
   const [credential] = await database
-    .select({ id: oauthCredentialsTable.id })
+    .select({ refreshToken: oauthCredentialsTable.refreshToken })
     .from(oauthCredentialsTable)
     .where(
       and(
@@ -63,7 +72,10 @@ const userOwnsSourceCredential = async (userId: string, credentialId: string): P
     )
     .limit(FIRST_RESULT_LIMIT);
 
-  return Boolean(credential);
+  if (!credential) {
+    return null;
+  }
+  return { microsoftApp: readMicrosoftRefreshToken(credential.refreshToken).appKey };
 };
 
 const GET = withWideEvent(
@@ -74,6 +86,7 @@ const GET = withWideEvent(
     const accountId = url.searchParams.get("accountId");
     let credentialId = url.searchParams.get("credentialId");
     let loginHint: string | null = null;
+    let microsoftApp = url.searchParams.get("app");
 
     if (
       !sourceAuthorizeQuerySchema.allows(query)
@@ -95,10 +108,18 @@ const GET = withWideEvent(
     }
 
     if (credentialId) {
-      const ownsCredential = await userOwnsSourceCredential(userId, credentialId);
-      if (!ownsCredential) {
+      const owned = await findOwnedSourceCredential(userId, credentialId);
+      if (!owned) {
         return ErrorResponse.notFound("Source credential not found").toResponse();
       }
+      microsoftApp = owned.microsoftApp ?? microsoftApp;
+    }
+
+    if (provider === "outlook" && microsoftApp && !findMicrosoftApp(loadMicrosoftApps(), microsoftApp)) {
+      return ErrorResponse.badRequest("Unknown Microsoft app").toResponse();
+    }
+    if (provider === "outlook" && microsoftApp) {
+      widelog.set("oauth.microsoft_app", microsoftApp);
     }
 
     const callbackUrl = new URL(`/api/sources/callback/${provider}`, baseUrl);
@@ -106,6 +127,7 @@ const GET = withWideEvent(
       callbackUrl: string;
       sourceCredentialId?: string;
       loginHint?: string;
+      microsoftApp?: string;
     } = {
       callbackUrl: callbackUrl.toString(),
     };
@@ -114,6 +136,9 @@ const GET = withWideEvent(
     }
     if (loginHint) {
       authorizationOptions.loginHint = loginHint;
+    }
+    if (provider === "outlook" && microsoftApp) {
+      authorizationOptions.microsoftApp = microsoftApp;
     }
     const authUrl = await getAuthorizationUrl(provider, userId, authorizationOptions);
 
