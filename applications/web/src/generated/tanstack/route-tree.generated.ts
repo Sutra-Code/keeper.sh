@@ -62,6 +62,7 @@ import { Route as dashboardDashboardIcalIndexRouteImport } from './../../routes/
 import { Route as dashboardDashboardEventsIndexRouteImport } from './../../routes/(dashboard)/dashboard/events/index'
 import { Route as dashboardDashboardConnectIndexRouteImport } from './../../routes/(dashboard)/dashboard/connect/index'
 import { Route as dashboardDashboardSettingsPasskeysRouteImport } from './../../routes/(dashboard)/dashboard/settings/passkeys'
+import { Route as dashboardDashboardSettingsMicrosoftAppsRouteImport } from './../../routes/(dashboard)/dashboard/settings/microsoft-apps'
 import { Route as dashboardDashboardSettingsChangePasswordRouteImport } from './../../routes/(dashboard)/dashboard/settings/change-password'
 import { Route as dashboardDashboardSettingsApiTokensRouteImport } from './../../routes/(dashboard)/dashboard/settings/api-tokens'
 import { Route as dashboardDashboardIcalFeedIdRouteImport } from './../../routes/(dashboard)/dashboard/ical/$feedId'
@@ -354,6 +355,12 @@ const dashboardDashboardSettingsPasskeysRoute =
     path: '/passkeys',
     getParentRoute: () => dashboardDashboardSettingsRouteRoute,
   } as any)
+const dashboardDashboardSettingsMicrosoftAppsRoute =
+  dashboardDashboardSettingsMicrosoftAppsRouteImport.update({
+    id: '/microsoft-apps',
+    path: '/microsoft-apps',
+    getParentRoute: () => dashboardDashboardSettingsRouteRoute,
+  } as any)
 const dashboardDashboardSettingsChangePasswordRoute =
   dashboardDashboardSettingsChangePasswordRouteImport.update({
     id: '/change-password',
@@ -499,6 +506,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/ical/$feedId': typeof dashboardDashboardIcalFeedIdRoute
   '/dashboard/settings/api-tokens': typeof dashboardDashboardSettingsApiTokensRoute
   '/dashboard/settings/change-password': typeof dashboardDashboardSettingsChangePasswordRoute
+  '/dashboard/settings/microsoft-apps': typeof dashboardDashboardSettingsMicrosoftAppsRoute
   '/dashboard/settings/passkeys': typeof dashboardDashboardSettingsPasskeysRoute
   '/dashboard/connect/': typeof dashboardDashboardConnectIndexRoute
   '/dashboard/events/': typeof dashboardDashboardEventsIndexRoute
@@ -560,6 +568,7 @@ export interface FileRoutesByTo {
   '/dashboard/ical/$feedId': typeof dashboardDashboardIcalFeedIdRoute
   '/dashboard/settings/api-tokens': typeof dashboardDashboardSettingsApiTokensRoute
   '/dashboard/settings/change-password': typeof dashboardDashboardSettingsChangePasswordRoute
+  '/dashboard/settings/microsoft-apps': typeof dashboardDashboardSettingsMicrosoftAppsRoute
   '/dashboard/settings/passkeys': typeof dashboardDashboardSettingsPasskeysRoute
   '/dashboard/connect': typeof dashboardDashboardConnectIndexRoute
   '/dashboard/events': typeof dashboardDashboardEventsIndexRoute
@@ -631,6 +640,7 @@ export interface FileRoutesById {
   '/(dashboard)/dashboard/ical/$feedId': typeof dashboardDashboardIcalFeedIdRoute
   '/(dashboard)/dashboard/settings/api-tokens': typeof dashboardDashboardSettingsApiTokensRoute
   '/(dashboard)/dashboard/settings/change-password': typeof dashboardDashboardSettingsChangePasswordRoute
+  '/(dashboard)/dashboard/settings/microsoft-apps': typeof dashboardDashboardSettingsMicrosoftAppsRoute
   '/(dashboard)/dashboard/settings/passkeys': typeof dashboardDashboardSettingsPasskeysRoute
   '/(dashboard)/dashboard/connect/': typeof dashboardDashboardConnectIndexRoute
   '/(dashboard)/dashboard/events/': typeof dashboardDashboardEventsIndexRoute
@@ -699,6 +709,7 @@ export interface FileRouteTypes {
     | '/dashboard/ical/$feedId'
     | '/dashboard/settings/api-tokens'
     | '/dashboard/settings/change-password'
+    | '/dashboard/settings/microsoft-apps'
     | '/dashboard/settings/passkeys'
     | '/dashboard/connect/'
     | '/dashboard/events/'
@@ -760,6 +771,7 @@ export interface FileRouteTypes {
     | '/dashboard/ical/$feedId'
     | '/dashboard/settings/api-tokens'
     | '/dashboard/settings/change-password'
+    | '/dashboard/settings/microsoft-apps'
     | '/dashboard/settings/passkeys'
     | '/dashboard/connect'
     | '/dashboard/events'
@@ -830,6 +842,7 @@ export interface FileRouteTypes {
     | '/(dashboard)/dashboard/ical/$feedId'
     | '/(dashboard)/dashboard/settings/api-tokens'
     | '/(dashboard)/dashboard/settings/change-password'
+    | '/(dashboard)/dashboard/settings/microsoft-apps'
     | '/(dashboard)/dashboard/settings/passkeys'
     | '/(dashboard)/dashboard/connect/'
     | '/(dashboard)/dashboard/events/'
@@ -1223,6 +1236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof dashboardDashboardSettingsPasskeysRouteImport
       parentRoute: typeof dashboardDashboardSettingsRouteRoute
     }
+    '/(dashboard)/dashboard/settings/microsoft-apps': {
+      id: '/(dashboard)/dashboard/settings/microsoft-apps'
+      path: '/microsoft-apps'
+      fullPath: '/dashboard/settings/microsoft-apps'
+      preLoaderRoute: typeof dashboardDashboardSettingsMicrosoftAppsRouteImport
+      parentRoute: typeof dashboardDashboardSettingsRouteRoute
+    }
     '/(dashboard)/dashboard/settings/change-password': {
       id: '/(dashboard)/dashboard/settings/change-password'
       path: '/change-password'
@@ -1431,6 +1451,7 @@ const dashboardDashboardIcalRouteRouteWithChildren =
 interface dashboardDashboardSettingsRouteRouteChildren {
   dashboardDashboardSettingsApiTokensRoute: typeof dashboardDashboardSettingsApiTokensRoute
   dashboardDashboardSettingsChangePasswordRoute: typeof dashboardDashboardSettingsChangePasswordRoute
+  dashboardDashboardSettingsMicrosoftAppsRoute: typeof dashboardDashboardSettingsMicrosoftAppsRoute
   dashboardDashboardSettingsPasskeysRoute: typeof dashboardDashboardSettingsPasskeysRoute
   dashboardDashboardSettingsIndexRoute: typeof dashboardDashboardSettingsIndexRoute
 }
@@ -1441,6 +1462,8 @@ const dashboardDashboardSettingsRouteRouteChildren: dashboardDashboardSettingsRo
       dashboardDashboardSettingsApiTokensRoute,
     dashboardDashboardSettingsChangePasswordRoute:
       dashboardDashboardSettingsChangePasswordRoute,
+    dashboardDashboardSettingsMicrosoftAppsRoute:
+      dashboardDashboardSettingsMicrosoftAppsRoute,
     dashboardDashboardSettingsPasskeysRoute:
       dashboardDashboardSettingsPasskeysRoute,
     dashboardDashboardSettingsIndexRoute: dashboardDashboardSettingsIndexRoute,

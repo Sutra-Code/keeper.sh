@@ -4,7 +4,9 @@
  *   MICROSOFT_<KEY>_CLIENT_ID, MICROSOFT_<KEY>_CLIENT_SECRET,
  *   MICROSOFT_<KEY>_TENANT_ID (optional, defaults to "common") and MICROSOFT_<KEY>_LABEL (optional).
  * The plain MICROSOFT_CLIENT_ID / MICROSOFT_CLIENT_SECRET / MICROSOFT_TENANT_ID pair keeps
- * working as the app with key "default".
+ * working as the app with key "default". Apps saved from the settings screen live in the
+ * microsoft_apps table; each service keeps a copy in memory (setStoredMicrosoftApps) and
+ * getMicrosoftApps merges both, the database winning on the same key.
  *
  * A refresh token only works with the app that issued it, so stored refresh tokens carry the
  * app key ("msapp:<key>:<token>"). Every refresh path already hands the stored token to
@@ -32,6 +34,15 @@ const readValue = (source: EnvSource, name: string): string | null => {
     return null;
   }
   return value;
+};
+
+/** Opens the MICROSOFT_CLIENT_ID gates when every app lives in the database. */
+const MICROSOFT_APPS_IN_DATABASE = "microsoft-apps-in-database";
+
+let storedApps: MicrosoftApp[] = [];
+
+const setStoredMicrosoftApps = (apps: MicrosoftApp[]): void => {
+  storedApps = apps;
 };
 
 const capitalize = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1);
@@ -79,6 +90,12 @@ const loadMicrosoftApps = (source: EnvSource = process.env): MicrosoftApp[] => {
   return apps;
 };
 
+const getMicrosoftApps = (source: EnvSource = process.env): MicrosoftApp[] => {
+  const storedKeys = new Set(storedApps.map((app) => app.key));
+  const fromEnv = loadMicrosoftApps(source).filter((app) => !storedKeys.has(app.key));
+  return [...fromEnv, ...storedApps];
+};
+
 const findMicrosoftApp = (
   apps: MicrosoftApp[],
   key: string | null | undefined,
@@ -90,9 +107,10 @@ const findMicrosoftApp = (
 };
 
 /**
- * Service env files gate Microsoft support on MICROSOFT_CLIENT_ID. When only named apps are
- * configured, the first one stands in so those gates stay open; the refresher still routes
- * each tagged token to its own app.
+ * Service env files gate Microsoft support on MICROSOFT_CLIENT_ID, read once at startup. When
+ * only named apps are configured, the first one stands in; when none is in the environment, a
+ * placeholder keeps the gates open for apps added to the database later. The refresher routes
+ * each tagged token to its own app either way.
  */
 interface MicrosoftEnvGate {
   MICROSOFT_CLIENT_ID?: string;
@@ -108,7 +126,7 @@ const withPrimaryMicrosoftApp = <TEnv extends MicrosoftEnvGate>(
   }
   const [primary] = loadMicrosoftApps(source);
   if (!primary) {
-    return env;
+    return { ...env, MICROSOFT_CLIENT_ID: MICROSOFT_APPS_IN_DATABASE, MICROSOFT_CLIENT_SECRET: MICROSOFT_APPS_IN_DATABASE };
   }
   return { ...env, MICROSOFT_CLIENT_ID: primary.clientId, MICROSOFT_CLIENT_SECRET: primary.clientSecret };
 };
@@ -141,7 +159,10 @@ const microsoftAuthorizeUrl = (tenantId: string): string =>
 
 export {
   DEFAULT_APP_KEY,
+  MICROSOFT_APPS_IN_DATABASE,
   loadMicrosoftApps,
+  getMicrosoftApps,
+  setStoredMicrosoftApps,
   findMicrosoftApp,
   withPrimaryMicrosoftApp,
   tagRefreshToken,

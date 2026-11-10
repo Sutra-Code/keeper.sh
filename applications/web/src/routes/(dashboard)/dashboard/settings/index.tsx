@@ -7,10 +7,12 @@ import Lock from "lucide-react/dist/esm/icons/lock";
 import Mail from "lucide-react/dist/esm/icons/mail";
 import Cookie from "lucide-react/dist/esm/icons/cookie";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
+import Building2 from "lucide-react/dist/esm/icons/building-2";
 import { pluralize } from "@/lib/pluralize";
 import { BackButton } from "@/components/ui/primitives/back-button";
 import { useSession } from "@/hooks/use-session";
 import { useApiTokens } from "@/hooks/use-api-tokens";
+import { useMicrosoftAppSettings } from "@/hooks/use-microsoft-app-settings";
 import { usePasskeys } from "@/hooks/use-passkeys";
 import { useHasPassword } from "@/hooks/use-has-password";
 import { useHasOidcAccount } from "@/hooks/use-has-oidc-account";
@@ -57,6 +59,7 @@ function SettingsPage() {
   const { data: linkedProviderIds = [] } = useLinkedProviderIds();
   const { label: accountLabel, value: accountValue } = resolveAccountIdentity(user);
   const { data: apiTokens = [] } = useApiTokens();
+  const { data: microsoftAppSettings } = useMicrosoftAppSettings();
   const { data: passkeys = [] } = usePasskeys(authCapabilities.supportsPasskeys);
   const oidcEnabled = authCapabilities.socialProviders.oidc === true;
   const { data: hasOidcAccount = false } = useHasOidcAccount(oidcEnabled);
@@ -156,6 +159,19 @@ function SettingsPage() {
             </Text>
           </NavigationMenuItemTrailing>
         </NavigationMenuLinkItem>
+        {microsoftAppSettings && (
+          <NavigationMenuLinkItem to="/dashboard/settings/microsoft-apps">
+            <NavigationMenuItemIcon>
+              <Building2 size={15} />
+            </NavigationMenuItemIcon>
+            <NavigationMenuItemLabel>Microsoft Apps</NavigationMenuItemLabel>
+            <NavigationMenuItemTrailing>
+              <Text size="sm" tone="muted">
+                {pluralize(microsoftAppSettings.apps.length, "organization", "organizations")}
+              </Text>
+            </NavigationMenuItemTrailing>
+          </NavigationMenuLinkItem>
+        )}
       </NavigationMenu>
       {oidcLinkError && <Text size="sm" tone="danger">{oidcLinkError}</Text>}
       <NavigationMenu>

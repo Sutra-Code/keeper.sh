@@ -2,8 +2,11 @@ import env from "./env";
 import { createDatabase } from "@keeper.sh/database";
 import Redis from "ioredis";
 import type { RefreshLockStore } from "@keeper.sh/calendar";
+import { startMicrosoftAppSync } from "@keeper.sh/calendar";
 
 const database = await createDatabase(env.DATABASE_URL, { maxConnections: env.DATABASE_POOL_MAX });
+// Microsoft apps saved in settings, reloaded every minute so new ones need no restart.
+await startMicrosoftAppSync({ database, encryptionKey: env.ENCRYPTION_KEY });
 
 const REDIS_COMMAND_TIMEOUT_MS = 10_000;
 const REDIS_MAX_RETRIES = 3;

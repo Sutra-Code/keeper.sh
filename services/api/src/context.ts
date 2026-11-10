@@ -18,10 +18,13 @@ import {
 import { widelog } from "@/utils/logging";
 import { authObserver } from "@/utils/auth-observer";
 import type { OAuthStateStore, RefreshLockStore, DestinationSyncResult } from "@keeper.sh/calendar";
+import { startMicrosoftAppSync } from "@keeper.sh/calendar";
 
 const MIN_TRUSTED_ORIGINS_COUNT = 0;
 
 const database = await createDatabase(env.DATABASE_URL, { maxConnections: env.DATABASE_POOL_MAX });
+// Microsoft apps saved in settings, reloaded every minute so new ones need no restart.
+await startMicrosoftAppSync({ database, encryptionKey: env.ENCRYPTION_KEY });
 const redis = new Redis(env.REDIS_URL, {
   commandTimeout: 10_000,
   maxRetriesPerRequest: 3,

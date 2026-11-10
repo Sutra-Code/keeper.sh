@@ -343,10 +343,19 @@ export {
 } from "./core/oauth/microsoft";
 export {
   loadMicrosoftApps,
+  getMicrosoftApps,
   findMicrosoftApp,
   readRefreshToken as readMicrosoftRefreshToken,
   type MicrosoftApp,
 } from "./core/oauth/microsoft-apps";
+export {
+  deleteMicrosoftApp,
+  listStoredMicrosoftApps,
+  saveMicrosoftApp,
+  startMicrosoftAppSync,
+  type MicrosoftAppInput,
+  type StoredMicrosoftAppSummary,
+} from "./core/oauth/microsoft-app-store";
 export {
   generateState,
   validateState,

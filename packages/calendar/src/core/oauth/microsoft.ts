@@ -4,8 +4,9 @@ import { generateState, validateState } from "./state";
 import type { ValidatedState, OAuthStateStore } from "./state";
 import {
   DEFAULT_APP_KEY,
+  MICROSOFT_APPS_IN_DATABASE,
   findMicrosoftApp,
-  loadMicrosoftApps,
+  getMicrosoftApps,
   microsoftAuthorizeUrl,
   microsoftTokenUrl,
   readRefreshToken,
@@ -64,6 +65,13 @@ const resolveRefreshApp = (
     }
     return tagged;
   }
+  if (credentials.clientId === MICROSOFT_APPS_IN_DATABASE) {
+    const [first] = apps;
+    if (!first) {
+      throw new Error("No Microsoft app is configured");
+    }
+    return first;
+  }
   const matching = apps.find((app) => app.clientId === credentials.clientId);
   return {
     clientId: credentials.clientId,
@@ -74,12 +82,13 @@ const resolveRefreshApp = (
   };
 };
 
+/** Apps are read at refresh time, so ones saved in settings after startup are picked up. */
 const createMicrosoftTokenRefresher = (
   credentials: MicrosoftOAuthCredentials,
-  apps: MicrosoftApp[] = loadMicrosoftApps(),
+  apps?: MicrosoftApp[],
 ) => async (storedRefreshToken: string): Promise<MicrosoftTokenResponse> => {
   const { appKey, refreshToken } = readRefreshToken(storedRefreshToken);
-  const app = resolveRefreshApp(credentials, apps, appKey);
+  const app = resolveRefreshApp(credentials, apps ?? getMicrosoftApps(), appKey);
 
   const response = await fetch(microsoftTokenUrl(app.tenantId), {
     body: new URLSearchParams({
@@ -115,15 +124,18 @@ const createMicrosoftTokenRefresher = (
 const createMicrosoftOAuthService = (
   credentials: MicrosoftOAuthCredentials,
   stateStore: OAuthStateStore,
-  configuredApps: MicrosoftApp[] = loadMicrosoftApps(),
+  configuredApps?: MicrosoftApp[],
 ): MicrosoftOAuthService => {
-  let apps: MicrosoftApp[] = configuredApps;
-  if (apps.length === 0) {
-    apps = [{ ...credentials, key: DEFAULT_APP_KEY, label: "Microsoft", tenantId: DEFAULT_TENANT }];
-  }
+  const currentApps = (): MicrosoftApp[] => {
+    const apps = configuredApps ?? getMicrosoftApps();
+    if (apps.length > 0 || credentials.clientId === MICROSOFT_APPS_IN_DATABASE) {
+      return apps;
+    }
+    return [{ ...credentials, key: DEFAULT_APP_KEY, label: "Microsoft", tenantId: DEFAULT_TENANT }];
+  };
 
   const requireApp = (key: string | null | undefined): MicrosoftApp => {
-    const app = findMicrosoftApp(apps, key);
+    const app = findMicrosoftApp(currentApps(), key);
     if (!app) {
       throw new Error(`Microsoft app "${key}" is not configured`);
     }
@@ -191,7 +203,7 @@ const createMicrosoftOAuthService = (
     return { ...tokens, refresh_token: tagRefreshToken(app.key, tokens.refresh_token) };
   };
 
-  const refreshAccessToken = createMicrosoftTokenRefresher(credentials, apps);
+  const refreshAccessToken = createMicrosoftTokenRefresher(credentials, configuredApps);
 
   return {
     exchangeCodeForTokens,

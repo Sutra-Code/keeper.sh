@@ -19,7 +19,7 @@ import { importOAuthAccountCalendars } from "@/utils/oauth-sources";
 import { noteUserMilestone } from "@/utils/user-milestones";
 import { resolveProviderFailureReason } from "@/utils/oauth-callback-failure";
 import { baseUrl } from "@/context";
-import { findMicrosoftApp, loadMicrosoftApps } from "@keeper.sh/calendar";
+import { findMicrosoftApp, getMicrosoftApps } from "@keeper.sh/calendar";
 import { buildMicrosoftAdminConsentUrl } from "@/utils/microsoft-admin-consent";
 import type { OAuthConnectFailureReason } from "@keeper.sh/data-schemas";
 
@@ -38,7 +38,7 @@ const resolveApprovalUrl = (
   if (reason !== "admin-approval-required") {
     return null;
   }
-  const app = findMicrosoftApp(loadMicrosoftApps(), microsoftApp);
+  const app = findMicrosoftApp(getMicrosoftApps(), microsoftApp);
   if (!app) {
     return null;
   }

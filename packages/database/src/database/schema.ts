@@ -615,6 +615,24 @@ const userMilestonesTable = pgTable(
   ],
 );
 
+/**
+ * Microsoft app registrations, one per tenant, managed from the settings screen. The secret is
+ * encrypted with ENCRYPTION_KEY like CalDAV passwords; `key` is what tags stored refresh tokens,
+ * so it never changes once accounts are connected through the app.
+ */
+const microsoftAppsTable = pgTable("microsoft_apps", {
+  clientId: text().notNull(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  encryptedClientSecret: text().notNull(),
+  key: text().notNull().primaryKey(),
+  label: text().notNull(),
+  tenantId: text().notNull().default("common"),
+  updatedAt: timestamp({ withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 export {
   apiTokensTable,
   caldavCredentialsTable,
@@ -630,6 +648,7 @@ export {
   icalFeedSettingsTable,
   icalFeedsTable,
   INGEST_SCHEDULE_PARKED_REASONS,
+  microsoftAppsTable,
   oauthCredentialsTable,
   sourceDestinationMappingsTable,
   sourceIngestScheduleTable,

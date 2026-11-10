@@ -1,5 +1,5 @@
 import { calendarAccountsTable, oauthCredentialsTable } from "@keeper.sh/database/schema";
-import { findMicrosoftApp, loadMicrosoftApps, readMicrosoftRefreshToken } from "@keeper.sh/calendar";
+import { findMicrosoftApp, getMicrosoftApps, readMicrosoftRefreshToken } from "@keeper.sh/calendar";
 import { and, eq } from "drizzle-orm";
 import { withAuth, withWideEvent } from "@/utils/middleware";
 import { ErrorResponse } from "@/utils/responses";
@@ -78,6 +78,18 @@ const findOwnedSourceCredential = async (
   return { microsoftApp: readMicrosoftRefreshToken(credential.refreshToken).appKey };
 };
 
+/** Why an Outlook authorization cannot use the requested app, or null when it can. */
+const rejectMicrosoftApp = (microsoftApp: string | null): string | null => {
+  const apps = getMicrosoftApps();
+  if (apps.length === 0) {
+    return "Unsupported provider";
+  }
+  if (microsoftApp && !findMicrosoftApp(apps, microsoftApp)) {
+    return "Unknown Microsoft app";
+  }
+  return null;
+};
+
 const GET = withWideEvent(
   withAuth(async ({ request, userId }) => {
     const url = new URL(request.url);
@@ -115,11 +127,14 @@ const GET = withWideEvent(
       microsoftApp = owned.microsoftApp ?? microsoftApp;
     }
 
-    if (provider === "outlook" && microsoftApp && !findMicrosoftApp(loadMicrosoftApps(), microsoftApp)) {
-      return ErrorResponse.badRequest("Unknown Microsoft app").toResponse();
-    }
-    if (provider === "outlook" && microsoftApp) {
-      widelog.set("oauth.microsoft_app", microsoftApp);
+    if (provider === "outlook") {
+      const rejection = rejectMicrosoftApp(microsoftApp);
+      if (rejection) {
+        return ErrorResponse.badRequest(rejection).toResponse();
+      }
+      widelog.set("oauth.microsoft_app", microsoftApp ?? "first");
+    } else {
+      microsoftApp = null;
     }
 
     const callbackUrl = new URL(`/api/sources/callback/${provider}`, baseUrl);
@@ -137,7 +152,7 @@ const GET = withWideEvent(
     if (loginHint) {
       authorizationOptions.loginHint = loginHint;
     }
-    if (provider === "outlook" && microsoftApp) {
+    if (microsoftApp) {
       authorizationOptions.microsoftApp = microsoftApp;
     }
     const authUrl = await getAuthorizationUrl(provider, userId, authorizationOptions);

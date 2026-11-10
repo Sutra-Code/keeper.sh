@@ -7,8 +7,11 @@ import { createPremiumService } from "@keeper.sh/premium";
 import { resolveWebhookConfig } from "@keeper.sh/calendar";
 import type { RefreshLockStore } from "@keeper.sh/calendar";
 import { Polar } from "@polar-sh/sdk";
+import { startMicrosoftAppSync } from "@keeper.sh/calendar";
 
 const database = await createDatabase(env.DATABASE_URL, { maxConnections: env.DATABASE_POOL_MAX });
+// Microsoft apps saved in settings, reloaded every minute so new ones need no restart.
+await startMicrosoftAppSync({ database, encryptionKey: env.ENCRYPTION_KEY });
 
 /*
  * The flush writer gets its own single connection so ingest persistence

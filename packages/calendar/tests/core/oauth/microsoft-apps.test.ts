@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  MICROSOFT_APPS_IN_DATABASE,
+  getMicrosoftApps,
   loadMicrosoftApps,
+  setStoredMicrosoftApps,
   readRefreshToken,
   tagRefreshToken,
   withPrimaryMicrosoftApp,
@@ -78,9 +81,53 @@ describe("loadMicrosoftApps", () => {
   });
 
   it("lets named apps open the MICROSOFT_CLIENT_ID gates", () => {
-    const env = withPrimaryMicrosoftApp({ MICROSOFT_CLIENT_ID: undefined }, NAMED_APPS_ENV);
+    const env = withPrimaryMicrosoftApp<{ MICROSOFT_CLIENT_ID?: string }>({}, NAMED_APPS_ENV);
 
     expect(env.MICROSOFT_CLIENT_ID).toBe("oriontek-client");
+  });
+
+  it("keeps the gates open for apps that only live in the database", () => {
+    expect(withPrimaryMicrosoftApp<{ MICROSOFT_CLIENT_ID?: string }>({}, {}).MICROSOFT_CLIENT_ID).toBe(MICROSOFT_APPS_IN_DATABASE);
+  });
+});
+
+describe("getMicrosoftApps", () => {
+  afterEach(() => {
+    setStoredMicrosoftApps([]);
+  });
+
+  it("adds the apps saved in the database, which win over the environment on the same key", () => {
+    setStoredMicrosoftApps([
+      { clientId: "db-sutra", clientSecret: "s", key: "sutra", label: "SutraCode DB", tenantId: "t" },
+      { clientId: "db-new", clientSecret: "s", key: "acme", label: "Acme", tenantId: "common" },
+    ]);
+
+    const apps = getMicrosoftApps(NAMED_APPS_ENV);
+
+    expect(apps.map((app) => [app.key, app.clientId])).toEqual([
+      ["oriontek", "oriontek-client"],
+      ["weilgroup", "weilgroup-client"],
+      ["sutra", "db-sutra"],
+      ["acme", "db-new"],
+    ]);
+  });
+
+  it("refreshes a token tagged with an app added after the refresher was created", async () => {
+    const refresh = createMicrosoftTokenRefresher({
+      clientId: MICROSOFT_APPS_IN_DATABASE,
+      clientSecret: MICROSOFT_APPS_IN_DATABASE,
+    });
+    setStoredMicrosoftApps([
+      { clientId: "db-new", clientSecret: "s", key: "acme", label: "Acme", tenantId: "acme-tenant" },
+    ]);
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(tokenResponse("rotated"));
+
+    const tokens = await refresh("msapp:acme:stored");
+
+    expect(tokens.refresh_token).toBe("msapp:acme:rotated");
+    expect(String(fetchSpy.mock.calls[0]?.[0])).toBe(
+      "https://login.microsoftonline.com/acme-tenant/oauth2/v2.0/token",
+    );
   });
 });
 

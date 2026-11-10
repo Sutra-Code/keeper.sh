@@ -52,6 +52,7 @@ vi.mock("@keeper.sh/premium", () => ({
 
 vi.mock("@keeper.sh/calendar", () => ({
   resolveWebhookConfig: () => null,
+  startMicrosoftAppSync: () => Promise.resolve(),
 }));
 
 vi.mock("@polar-sh/sdk", () => ({

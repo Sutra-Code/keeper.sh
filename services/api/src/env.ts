@@ -9,6 +9,8 @@ const schema = {
   DATABASE_POOL_MAX: "number?",
   DATABASE_URL: "string.url",
   ENCRYPTION_KEY: "string?",
+  /** Comma-separated usernames allowed to manage Microsoft apps in settings. */
+  SETTINGS_ADMIN_USERNAMES: "string?",
   FEEDBACK_EMAIL: "string?",
   GOOGLE_CLIENT_ID: "string?",
   GOOGLE_CLIENT_SECRET: "string?",
