@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode, SubmitEvent } from "react";
 import ArrowLeftRight from "lucide-react/dist/esm/icons/arrow-left-right";
 import Check from "lucide-react/dist/esm/icons/check";
@@ -68,10 +69,11 @@ interface PreambleLayoutProps {
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
   /** Rendered just above the continue button, inside the form. */
   picker?: ReactNode;
+  submitDisabled?: boolean;
   children?: ReactNode;
 }
 
-function PreambleLayout({ provider, onSubmit, picker, children }: PreambleLayoutProps) {
+function PreambleLayout({ provider, onSubmit, picker, submitDisabled = false, children }: PreambleLayoutProps) {
   const { label, heading, company, accountNotice } = PROVIDER_PREAMBLES[provider];
   return (
     <>
@@ -108,7 +110,7 @@ function PreambleLayout({ provider, onSubmit, picker, children }: PreambleLayout
         {picker}
         <div className="flex items-stretch gap-2">
           <BackButton variant="border" size="standard" className="self-stretch justify-center px-3.5" />
-          <Button type="submit" className="grow justify-center">
+          <Button type="submit" disabled={submitDisabled} className="grow justify-center">
             <ButtonText>Continue to {company}</ButtonText>
           </Button>
         </div>
@@ -126,6 +128,16 @@ interface MicrosoftAppPickerProps {
   apps: MicrosoftApp[];
   selected: string;
   onSelect: (key: string) => void;
+}
+
+function NoMicrosoftApps() {
+  return (
+    <Text size="sm" tone="muted" align="left">
+      No organization is set up yet. Add one in{" "}
+      <Link to="/dashboard/settings/microsoft-apps" className="underline">Settings → Microsoft Apps</Link>
+      {" "}first.
+    </Text>
+  );
 }
 
 /** One Microsoft app per tenant: the user picks the organization the account belongs to. */
@@ -155,29 +167,40 @@ function MicrosoftAppPicker({ apps, selected, onSelect }: MicrosoftAppPickerProp
 }
 
 export function LinkOAuthPreamble({ provider }: LinkOAuthPreambleProps) {
-  const { data: microsoftApps } = useMicrosoftApps(provider === "outlook");
+  const isOutlook = provider === "outlook";
+  const { data: microsoftApps } = useMicrosoftApps(isOutlook);
   const [chosenApp, setChosenApp] = useState<string | null>(null);
   const apps = microsoftApps ?? [];
   const selectedApp = chosenApp ?? apps[0]?.key ?? null;
-  const showPicker = provider === "outlook" && apps.length > 1;
+  // Outlook always names the organization, even with one, so the account goes to the right tenant.
+  const missingApps = isOutlook && microsoftApps !== undefined && apps.length === 0;
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isOutlook && !selectedApp) {
+      return;
+    }
     track(ANALYTICS_EVENTS.oauth_authorize_started, { oauth_is_reconnect: false, provider_name: provider });
     const search = new URLSearchParams({ provider });
-    if (showPicker && selectedApp) {
+    if (isOutlook && selectedApp) {
       search.set("app", selectedApp);
     }
     window.location.href = `/api/sources/authorize?${search.toString()}`;
   };
 
+  let picker: ReactNode = null;
+  if (missingApps) {
+    picker = <NoMicrosoftApps />;
+  } else if (isOutlook && selectedApp) {
+    picker = <MicrosoftAppPicker apps={apps} selected={selectedApp} onSelect={setChosenApp} />;
+  }
+
   return (
     <PreambleLayout
       provider={provider}
       onSubmit={handleSubmit}
-      picker={showPicker && selectedApp
-        ? <MicrosoftAppPicker apps={apps} selected={selectedApp} onSelect={setChosenApp} />
-        : null}
+      picker={picker}
+      submitDisabled={isOutlook && !selectedApp}
     />
   );
 }
