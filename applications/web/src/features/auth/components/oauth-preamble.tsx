@@ -8,12 +8,10 @@ import CalendarPlus from "lucide-react/dist/esm/icons/calendar-plus";
 import ShieldCheck from "lucide-react/dist/esm/icons/shield-check";
 import SutraMark from "@/assets/sutra-mark.svg?react";
 import { BackButton } from "@/components/ui/primitives/back-button";
-import { SOURCE_CODE_URL } from "@/components/ui/primitives/source-notice";
 import { Heading2 } from "@/components/ui/primitives/heading";
 import { Text } from "@/components/ui/primitives/text";
 import { Divider } from "@/components/ui/primitives/divider";
 import { Button, ButtonText } from "@/components/ui/primitives/button";
-import { ExternalTextLink } from "@/components/ui/primitives/text-link";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -115,12 +113,6 @@ function PreambleLayout({ provider, onSubmit, picker, children }: PreambleLayout
           </Button>
         </div>
       </form>
-      <Text size="sm" tone="muted" align="center">
-        Keeper.sh is open source.{" "}
-        <ExternalTextLink href={SOURCE_CODE_URL} target="_blank" rel="noreferrer">
-          Read the code
-        </ExternalTextLink>
-      </Text>
       {children}
     </>
   );
