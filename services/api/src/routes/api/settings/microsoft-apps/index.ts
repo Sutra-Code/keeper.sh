@@ -9,6 +9,8 @@ import { ErrorResponse } from "@/utils/responses";
 import { isSettingsAdmin } from "@/utils/settings-admin";
 
 const APP_KEY_PATTERN = /^[a-z0-9]{1,32}$/;
+// Entra shows a secret's ID as a GUID next to its Value; pasting the ID fails later with AADSTS7000215.
+const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const microsoftAppBodySchema = type({
   key: "string",
@@ -59,6 +61,11 @@ const POST = withWideEvent(
     }
     if (!body.label.trim() || !body.clientId.trim()) {
       return ErrorResponse.badRequest("Name and client ID are required.").toResponse();
+    }
+    if (body.clientSecret && GUID_PATTERN.test(body.clientSecret.trim())) {
+      return ErrorResponse.badRequest(
+        "That is the secret's ID. Paste its Value from Certificates & secrets in Entra.",
+      ).toResponse();
     }
     if (!encryptionKey) {
       return ErrorResponse.badRequest("ENCRYPTION_KEY is not configured.").toResponse();
