@@ -2,7 +2,6 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { getMcpAuthorizationSearch } from "@/lib/mcp-auth-flow";
 import { resolveAuthRedirect } from "@/lib/route-access-guards";
 import SutraMark from "@/assets/sutra-mark.svg?react";
-import { SourceNotice } from "@/components/ui/primitives/source-notice";
 import { SutraWordmark } from "@/components/ui/primitives/sutra-wordmark";
 
 export const Route = createFileRoute("/(auth)")({
@@ -47,7 +46,6 @@ function AuthLayout() {
           <div className="flex w-full flex-col gap-2">
             <Outlet />
           </div>
-          <SourceNotice className="mt-auto pt-8" />
         </div>
       </div>
     </main>
