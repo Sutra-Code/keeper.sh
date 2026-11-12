@@ -4,6 +4,7 @@ import { fetcher } from "@/lib/fetcher";
 import { buildEventsUrl } from "@/lib/events-url";
 import { useStartOfToday } from "./use-start-of-today";
 import type { ApiEvent } from "@/types/api";
+import type { EventColor } from "@/features/dashboard/components/event-card.styles";
 
 export interface CalendarEvent {
   id: string;
@@ -19,6 +20,8 @@ export interface CalendarEvent {
   calendarName: string;
   calendarProvider: string;
   calendarUrl: string;
+  /** Colour of the account the event belongs to, once the accounts are known. */
+  color?: EventColor;
 }
 
 const DAYS_PER_PAGE = 7;

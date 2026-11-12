@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { flushSync } from "react-dom";
-import { useStore } from "jotai";
+import { useAtomValue, useStore } from "jotai";
 import { calendarJumpAtom } from "@/state/event-graph-hover";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import { cn } from "@/utils/cn";
 import { msg, useLocale, useT } from "@/i18n";
 import { useEventsInRange } from "@/hooks/use-events";
+import { hiddenAccountIdsAtom } from "@/state/hidden-accounts";
+import { colorEvents, useAccountColors } from "../account-colors";
+import { AccountLegend } from "./account-legend";
 import { MonthGrid } from "./month-grid";
 import { WeekGrid } from "./week-grid";
 import { bucketEventsByDay } from "./event-layout";
@@ -53,7 +56,13 @@ export function CalendarView() {
   const monthDays = useMemo(() => getMonthGridDays(anchor), [anchor]);
 
   const fetchRange = view === "month" ? getMonthFetchRange(anchor) : getWeekFetchRange(anchor);
-  const { events } = useEventsInRange(fetchRange.start, fetchRange.end);
+  const { events: fetchedEvents } = useEventsInRange(fetchRange.start, fetchRange.end);
+  const { accounts, accountIdByCalendarId, colorByAccountId } = useAccountColors();
+  const hiddenAccountIds = useAtomValue(hiddenAccountIdsAtom);
+  const events = useMemo(
+    () => colorEvents(fetchedEvents, { accountIdByCalendarId, colorByAccountId, hiddenAccountIds }),
+    [fetchedEvents, accountIdByCalendarId, colorByAccountId, hiddenAccountIds],
+  );
   // Keyed on the window's instants, not `anchor`: the anchor moves on every scroll step, the window doesn't.
   const fetchStartMs = fetchRange.start.getTime();
   const fetchEndMs = fetchRange.end.getTime();
@@ -84,10 +93,11 @@ export function CalendarView() {
 
   const toolbar = (
     <>
-      <span className="font-display text-xl font-medium tracking-tight text-foreground">
+      <span className="shrink-0 font-display text-xl font-medium tracking-tight text-foreground">
         {title}
       </span>
-      <div className="flex items-center gap-3">
+      <AccountLegend accounts={accounts} />
+      <div className="flex shrink-0 items-center gap-3">
         <div className="flex items-center rounded-xl bg-background p-1">
           {VIEWS.map((mode) => (
             <button

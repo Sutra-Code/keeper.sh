@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import Check from "lucide-react/dist/esm/icons/check";
 import Copy from "lucide-react/dist/esm/icons/copy";
+import Bot from "lucide-react/dist/esm/icons/bot";
 import Gauge from "lucide-react/dist/esm/icons/gauge";
 import KeySquare from "lucide-react/dist/esm/icons/key-square";
 import Plus from "lucide-react/dist/esm/icons/plus";
@@ -89,11 +90,19 @@ function ApiTokensPage() {
     }
   };
 
+  const [mcpUrlCopied, setMcpUrlCopied] = useState(false);
+
   const handleCopy = async () => {
     if (!revealedToken) return;
     await navigator.clipboard.writeText(revealedToken);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyMcpUrl = async () => {
+    await navigator.clipboard.writeText(`${window.location.origin}/mcp`);
+    setMcpUrlCopied(true);
+    setTimeout(() => setMcpUrlCopied(false), 2000);
   };
 
   const handleCloseReveal = () => {
@@ -116,7 +125,21 @@ function ApiTokensPage() {
             </Text>
           </NavigationMenuItemTrailing>
         </NavigationMenuItem>
+        <NavigationMenuButtonItem onClick={handleCopyMcpUrl}>
+          <NavigationMenuItemIcon>
+            <Bot size={15} />
+          </NavigationMenuItemIcon>
+          <NavigationMenuItemLabel>{t("MCP server for AI agents")}</NavigationMenuItemLabel>
+          <NavigationMenuItemTrailing>
+            <Text size="sm" tone="muted">
+              {mcpUrlCopied ? t("Copied") : t("Copy URL")}
+            </Text>
+          </NavigationMenuItemTrailing>
+        </NavigationMenuButtonItem>
       </NavigationMenu>
+      <Text size="sm" tone="muted" className="px-2">
+        {t("Give an AI agent the MCP server URL and one of these tokens as its Bearer token. The agent gets the same access to your calendars as you.")}
+      </Text>
       {error && (
         <ErrorState message={t("Failed to load API tokens.")} onRetry={() => mutate()} />
       )}

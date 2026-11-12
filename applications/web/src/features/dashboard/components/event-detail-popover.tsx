@@ -159,7 +159,7 @@ function EventDetailPanel({ selection, onClose }: EventDetailPanelProps) {
         tabIndex={-1}
         className={cn(
           "overflow-hidden rounded-lg bg-(--event-surface) ring-1 ring-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          EVENT_COLORS.ink,
+          EVENT_COLORS[event.color ?? "ink"],
         )}
         initial={{ ...SHADOW_HIDDEN, width: anchor.width }}
         animate={{ ...SHADOW_VISIBLE, width: PANEL_WIDTH }}

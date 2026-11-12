@@ -32,6 +32,12 @@ import { pluralize } from "@/lib/pluralize";
 import { resolveErrorMessage } from "@/utils/errors";
 import { canRefreshCalendars } from "@/utils/accounts";
 import { msg, useLocale, useT } from "@/i18n";
+import type { AccountColor } from "@keeper.sh/data-schemas";
+import Palette from "lucide-react/dist/esm/icons/palette";
+import { NavigationMenuItem } from "@/components/ui/composites/navigation-menu/navigation-menu-items";
+import { AccountColorPicker } from "@/features/dashboard/components/account-color-picker";
+import { resolveAccountColors } from "@/features/dashboard/account-colors";
+import { formatTimeUntil } from "@/lib/time";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/accounts/$accountId/",
@@ -199,8 +205,15 @@ function AccountDetailPage() {
             {account.calendarsRefreshedAt && (
               <MetadataRow label={t("Calendars Checked")} value={formatDate(account.calendarsRefreshedAt, locale)} />
             )}
+            <MetadataRow
+              label={t("Last sync")}
+              value={account.lastSyncedAt ? formatTimeUntil(new Date(account.lastSyncedAt), locale) : t("Not synced yet")}
+            />
           </NavigationMenu>
         </MenuGate>
+        <NavigationMenu>
+          <AccountColorItem accountId={accountId} />
+        </NavigationMenu>
         <DashboardSection
           title={t("Account Calendars")}
           description={calendars.length === 1
@@ -234,6 +247,49 @@ function AccountDetailPage() {
         />
       </PageBody>
     </div>
+  );
+}
+
+function AccountColorItem({ accountId }: { accountId: string }) {
+  const t = useT();
+  const { mutate: globalMutate } = useSWRConfig();
+  const { data: accounts } = useSWR<CalendarAccount[]>("/api/accounts");
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, startSaving] = useTransition();
+
+  const color = resolveAccountColors(accounts ?? []).get(accountId);
+  if (!color) return null;
+
+  const handleChange = (next: AccountColor) => {
+    if (next === color) return;
+    setError(null);
+    startSaving(async () => {
+      try {
+        await apiFetch(`/api/accounts/${accountId}`, {
+          body: JSON.stringify({ color: next }),
+          headers: { "Content-Type": "application/json" },
+          method: "PATCH",
+        });
+        await Promise.all([globalMutate("/api/accounts"), globalMutate(`/api/accounts/${accountId}`)]);
+      } catch (err) {
+        setError(resolveErrorMessage(err, msg("The color couldn't be saved. Try again.")));
+      }
+    });
+  };
+
+  return (
+    <>
+      <NavigationMenuItem>
+        <NavigationMenuItemIcon>
+          <Palette size={15} />
+        </NavigationMenuItemIcon>
+        <NavigationMenuItemLabel>{t("Color")}</NavigationMenuItemLabel>
+        <NavigationMenuItemTrailing>
+          <AccountColorPicker value={color} disabled={isSaving} onChange={handleChange} />
+        </NavigationMenuItemTrailing>
+      </NavigationMenuItem>
+      {error && <Text size="sm" tone="danger">{t(error)}</Text>}
+    </>
   );
 }
 

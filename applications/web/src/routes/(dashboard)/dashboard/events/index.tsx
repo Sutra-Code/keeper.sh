@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, memo } from "react";
+import { useEffect, useMemo, useRef, useState, memo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { LazyMotion, useReducedMotion } from "motion/react";
 import * as m from "motion/react-m";
@@ -14,6 +14,7 @@ import { isEventPast } from "@/lib/time";
 import { resolveEventLocalEnd } from "@/lib/event-day";
 import { groupEventsByDay } from "@/features/dashboard/components/event-day-groups";
 import { EventCard } from "@/features/dashboard/components/event-card";
+import { colorEvents, useAccountColors } from "@/features/dashboard/account-colors";
 import { useEvents, type CalendarEvent } from "@/hooks/use-events";
 import { useLocale, useT } from "@/i18n";
 
@@ -86,7 +87,12 @@ function EventsHeader() {
 function EventsContent() {
   const t = useT();
   const locale = useLocale();
-  const { events, error, isLoading, isValidating, hasMore, loadMore } = useEvents();
+  const { events: fetchedEvents, error, isLoading, isValidating, hasMore, loadMore } = useEvents();
+  const { accountIdByCalendarId, colorByAccountId } = useAccountColors();
+  const events = useMemo(
+    () => colorEvents(fetchedEvents, { accountIdByCalendarId, colorByAccountId }),
+    [fetchedEvents, accountIdByCalendarId, colorByAccountId],
+  );
   const reduceMotion = useReducedMotion() ?? false;
   // Cards already on screen when the page mounts (cached data) stay put; ids seen for the first time rise in.
   const [seen, setSeen] = useState<SeenIds>(() => {

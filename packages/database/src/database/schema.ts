@@ -74,6 +74,8 @@ const calendarAccountsTable = pgTable(
     }),
     calendarsRefreshAttemptedAt: timestamp({ withTimezone: true }),
     calendarsRefreshedAt: timestamp({ withTimezone: true }),
+    /** Colour chosen for this account's events; null means the automatic one. */
+    color: text(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     displayName: text(),
     email: text(),

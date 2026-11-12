@@ -1,10 +1,18 @@
-import { caldavCredentialsTable, calendarAccountsTable, calendarsTable } from "@keeper.sh/database/schema";
-import { and, count, eq } from "drizzle-orm";
+import {
+  caldavCredentialsTable,
+  calendarAccountsTable,
+  calendarsTable,
+  sourceIngestScheduleTable,
+  syncStatusTable,
+} from "@keeper.sh/database/schema";
+import { updateAccountSchema } from "@keeper.sh/data-schemas";
+import { and, count, eq, max } from "drizzle-orm";
 import { withAuth, withWideEvent } from "@/utils/middleware";
 import { ErrorResponse } from "@/utils/responses";
 import { idParamSchema } from "@/utils/request-query";
 import { database } from "@/context";
 import { withAccountDisplay } from "@/utils/provider-display";
+import { withLastSyncedAt } from "@/utils/account-last-synced";
 import { runDeleteCalendarAccount } from "@/utils/delete-calendar-account";
 import { createDeleteCalendarAccountDependencies } from "@/utils/delete-calendar-account-dependencies";
 
@@ -20,6 +28,7 @@ const GET = withWideEvent(
         id: calendarAccountsTable.id,
         provider: calendarAccountsTable.provider,
         displayName: calendarAccountsTable.displayName,
+        color: calendarAccountsTable.color,
         email: calendarAccountsTable.email,
         accountIdentifier: calendarAccountsTable.accountId,
         authType: calendarAccountsTable.authType,
@@ -27,6 +36,8 @@ const GET = withWideEvent(
         calendarCount: count(calendarsTable.id),
         calendarsRefreshedAt: calendarAccountsTable.calendarsRefreshedAt,
         createdAt: calendarAccountsTable.createdAt,
+        lastReadAt: max(sourceIngestScheduleTable.lastSuccessAt),
+        lastPushedAt: max(syncStatusTable.lastSyncedAt),
         /* Reconnecting a CalDAV account replaces only the password, so the page needs
            the rest of the credential to show what it is repairing. */
         caldavServerUrl: caldavCredentialsTable.serverUrl,
@@ -34,6 +45,8 @@ const GET = withWideEvent(
       })
       .from(calendarAccountsTable)
       .leftJoin(calendarsTable, eq(calendarsTable.accountId, calendarAccountsTable.id))
+      .leftJoin(sourceIngestScheduleTable, eq(sourceIngestScheduleTable.calendarId, calendarsTable.id))
+      .leftJoin(syncStatusTable, eq(syncStatusTable.calendarId, calendarsTable.id))
       .leftJoin(
         caldavCredentialsTable,
         eq(calendarAccountsTable.caldavCredentialId, caldavCredentialsTable.id),
@@ -51,7 +64,38 @@ const GET = withWideEvent(
       return ErrorResponse.notFound("Account not found").toResponse();
     }
 
-    return Response.json(withAccountDisplay(account));
+    return Response.json(withAccountDisplay(withLastSyncedAt(account)));
+  }),
+);
+
+const PATCH = withWideEvent(
+  withAuth(async ({ params, request, userId }) => {
+    if (!params.id || !idParamSchema.allows(params)) {
+      return ErrorResponse.badRequest("Account ID is required").toResponse();
+    }
+    const { id } = params;
+
+    const body: unknown = await request.json().catch(() => null);
+    if (!updateAccountSchema.allows(body)) {
+      return ErrorResponse.badRequest("Choose one of the available colors").toResponse();
+    }
+
+    const [updated] = await database
+      .update(calendarAccountsTable)
+      .set({ color: body.color })
+      .where(
+        and(
+          eq(calendarAccountsTable.id, id),
+          eq(calendarAccountsTable.userId, userId),
+        ),
+      )
+      .returning({ color: calendarAccountsTable.color, id: calendarAccountsTable.id });
+
+    if (!updated) {
+      return ErrorResponse.notFound("Account not found").toResponse();
+    }
+
+    return Response.json(updated);
   }),
 );
 
@@ -75,4 +119,4 @@ const DELETE = withWideEvent(
   }),
 );
 
-export { GET, DELETE };
+export { GET, PATCH, DELETE };

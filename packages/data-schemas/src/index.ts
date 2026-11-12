@@ -23,6 +23,27 @@ const SYNC_RANGE_DEFINITIONS = [
   { label: "2 Years", shift: { amount: 24, unit: "months" }, value: "2_years" },
 ] as const;
 
+/** Colours a connected account can take, in the order new accounts receive them. */
+const ACCOUNT_COLORS = [
+  "blue",
+  "green",
+  "amber",
+  "rose",
+  "violet",
+  "teal",
+  "orange",
+  "slate",
+] as const;
+
+const accountColorSchema = type.enumerated(...ACCOUNT_COLORS);
+type AccountColor = typeof accountColorSchema.infer;
+
+const updateAccountSchema = type({
+  color: accountColorSchema.or("null"),
+  "+": "reject",
+});
+type UpdateAccount = typeof updateAccountSchema.infer;
+
 const DEFAULT_HISTORIC_SYNC_RANGE = "1_month" as const;
 const DEFAULT_FUTURE_SYNC_RANGE = "2_years" as const;
 
@@ -608,6 +629,9 @@ export {
   apiErrorBodySchema,
   applySourceSyncDefaults,
   readApiErrorMessage,
+  ACCOUNT_COLORS,
+  accountColorSchema,
+  updateAccountSchema,
   DEFAULT_FUTURE_SYNC_RANGE,
   DEFAULT_HISTORIC_SYNC_RANGE,
   SYNC_RANGE_DEFINITIONS,
@@ -728,4 +752,6 @@ export type {
   GraphNotification,
   GraphNotificationCollection,
   PushChannelStateValue,
+  AccountColor,
+  UpdateAccount,
 };

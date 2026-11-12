@@ -27,6 +27,7 @@ import {
 } from "@/features/dashboard/components/refresh-summary";
 import { EventGraph } from "@/features/dashboard/components/event-graph";
 import { ProviderIcon } from "@/components/ui/primitives/provider-icon";
+import type { AccountColor } from "@keeper.sh/data-schemas";
 import type { CalendarAccount, CalendarSource } from "@/types/api";
 import {
   NavigationMenu,
@@ -42,6 +43,9 @@ import { ProviderIconStack } from "@/components/ui/primitives/provider-icon-stac
 import { pluralize } from "@/lib/pluralize";
 import { useAnimatedSWR } from "@/hooks/use-animated-swr";
 import { SyncStatus } from "@/features/dashboard/components/sync-status";
+import { AccountSyncMenu } from "@/features/dashboard/components/account-sync-menu";
+import { AccountColorDot } from "@/features/dashboard/components/account-color-dot";
+import { resolveAccountColors, useAccountColors } from "@/features/dashboard/account-colors";
 import TriangleAlert from "lucide-react/dist/esm/icons/triangle-alert";
 import { useReauthAccounts } from "@/features/dashboard/components/reauth/use-reauth-accounts";
 import { DashboardReauthNotice } from "@/features/dashboard/components/reauth/reauth-notice";
@@ -151,6 +155,7 @@ function Home() {
       <div className="flex flex-col gap-1.5">
         <DashboardReauthNotice />
         <CalendarsMenu />
+        <AccountSyncMenu />
         <SyncPairsMenu />
         <PlanMenu />
         <NavigationMenu>
@@ -252,12 +257,18 @@ function AttentionDot() {
   );
 }
 
+function CalendarAccountDot({ color }: { color: AccountColor | undefined }) {
+  if (!color) return null;
+  return <AccountColorDot color={color} />;
+}
+
 function CalendarsMenu() {
   const t = useT();
   const locale = useLocale();
   const reauthIds = new Set(useReauthAccounts().map((account) => account.id));
   const { data: calendarsData, shouldAnimate: animateCalendars, isLoading: calendarsLoading, error, mutate: mutateCalendars } = useAnimatedSWR<CalendarSource[]>("/api/sources");
   const calendars = calendarsData ?? [];
+  const { colorByAccountId } = useAccountColors();
 
   const { data: eventCountData, error: eventCountError } = useSWR<{ count: number }>("/api/events/count");
   const eventCount = eventCountError ? undefined : eventCountData?.count;
@@ -309,6 +320,7 @@ function CalendarsMenu() {
               <NavigationMenuItemIcon>
                 <ProviderIcon provider={calendar.provider} calendarType={calendar.calendarType} />
               </NavigationMenuItemIcon>
+              <CalendarAccountDot color={colorByAccountId.get(calendar.accountId)} />
               <NavigationMenuItemLabel
                 className="shrink-0"
                 tone={reauthIds.has(calendar.accountId) ? "attention" : undefined}
@@ -408,6 +420,7 @@ function AccountsPopover({ reauthIds }: { reauthIds: Set<string> }) {
   const t = useT();
   const { data: accountsData, isLoading: accountsLoading, error: accountsError, mutate: mutateAccounts } = useAnimatedSWR<CalendarAccount[]>("/api/accounts");
   const accounts = accountsData ?? [];
+  const accountColors = resolveAccountColors(accounts);
 
   return (
     <NavigationMenuPopover
@@ -449,6 +462,7 @@ function AccountsPopover({ reauthIds }: { reauthIds: Set<string> }) {
             <NavigationMenuItemIcon>
               <ProviderIcon provider={account.provider} />
             </NavigationMenuItemIcon>
+            <CalendarAccountDot color={accountColors.get(account.id)} />
             <NavigationMenuItemLabel tone={needsReauth ? "attention" : undefined}>
               {account.accountLabel}
             </NavigationMenuItemLabel>

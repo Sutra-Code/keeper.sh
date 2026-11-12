@@ -111,12 +111,12 @@ export const EventCard = memo(function EventCard({
   past,
   layout = "list",
   style,
-  color = "ink",
+  color,
 }: EventCardProps) {
   const t = useT();
   const locale = useLocale();
   const title = event.title ?? event.calendarName;
-  const classes = cn(eventCard({ layout, past }), EVENT_COLORS[color]);
+  const classes = cn(eventCard({ layout, past }), EVENT_COLORS[color ?? event.color ?? "ink"]);
 
   if (layout === "grid") {
     // Clicks are delegated via `data-event-id` in WeekGrid, so the memoised tree never sees a handler.
@@ -177,9 +177,9 @@ const eventPill = tv({
   },
 });
 
-export const EventPill = memo(function EventPill({ event, past, color = "ink" }: EventPillProps) {
+export const EventPill = memo(function EventPill({ event, past, color }: EventPillProps) {
   return (
-    <div className={cn(eventPill({ past }), EVENT_COLORS[color])} style={{ height: EVENT_PILL_HEIGHT_PX }}>
+    <div className={cn(eventPill({ past }), EVENT_COLORS[color ?? event.color ?? "ink"])} style={{ height: EVENT_PILL_HEIGHT_PX }}>
       <EventText as="span" size="xs" className="min-w-0 truncate font-medium">
         {event.title ?? event.calendarName}
       </EventText>

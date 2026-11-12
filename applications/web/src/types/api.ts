@@ -1,4 +1,4 @@
-import type { ExcludableAvailability, SyncRange } from "@keeper.sh/data-schemas";
+import type { AccountColor, ExcludableAvailability, SyncRange } from "@keeper.sh/data-schemas";
 
 export interface CalendarAccount {
   id: string;
@@ -6,6 +6,8 @@ export interface CalendarAccount {
   providerName: string;
   providerIcon: string | null;
   displayName: string | null;
+  /** Colour chosen for the account; null means the automatic one. */
+  color: AccountColor | null;
   email: string | null;
   accountLabel: string;
   accountIdentifier: string | null;
@@ -13,6 +15,8 @@ export interface CalendarAccount {
   needsReauthentication: boolean;
   calendarCount: number;
   calendarsRefreshedAt: string | null;
+  /** Last time any of the account's calendars was read or written successfully. */
+  lastSyncedAt: string | null;
   createdAt: string;
   /** Present only on the account detail payload, and only for CalDAV accounts. */
   caldavServerUrl?: string | null;

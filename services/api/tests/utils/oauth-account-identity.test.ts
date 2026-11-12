@@ -58,6 +58,7 @@ create table calendar_accounts (
   "caldavCredentialId" uuid,
   "calendarsRefreshAttemptedAt" timestamptz,
   "calendarsRefreshedAt" timestamptz,
+  "color" text,
   "createdAt" timestamptz not null default now(),
   "displayName" text,
   "email" text,

@@ -121,6 +121,15 @@ html {
     var(--ui-foreground),
     var(--ui-background) 96.125%
   );
+  /* One hue per connected account, used for its events and its legend dot. */
+  --account-blue: #2f5fc4;
+  --account-green: #2f7d4f;
+  --account-amber: #b7791f;
+  --account-rose: #c2456b;
+  --account-violet: #6d4fc2;
+  --account-teal: #1f8a8a;
+  --account-orange: #c85f24;
+  --account-slate: #5b6472;
   --ui-destructive: #b42318;
   --ui-destructive-background: var(--color-red-50);
   --ui-destructive-border: var(--color-red-200);
@@ -259,6 +268,14 @@ html {
 
   :root {
     --ui-foreground: var(--color-neutral-50);
+    --account-blue: #7ea6f5;
+    --account-green: #6fc48f;
+    --account-amber: #e0ae5a;
+    --account-rose: #ee8aa8;
+    --account-violet: #a993f0;
+    --account-teal: #5cc7c7;
+    --account-orange: #f09a66;
+    --account-slate: #a3adbb;
     --ui-canvas: #0a0a09;
     --ui-well: var(--color-neutral-900);
     --ui-background: var(--color-neutral-950);
