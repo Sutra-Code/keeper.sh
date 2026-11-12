@@ -24,6 +24,7 @@ import {
 import type { MicrosoftAppForm, StoredMicrosoftApp } from "@/hooks/use-microsoft-app-settings";
 import { resolveErrorMessage } from "@/utils/errors";
 import { pluralize } from "@/lib/pluralize";
+import { msg, rich, useLocale, useT } from "@/i18n";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/settings/microsoft-apps",
@@ -77,6 +78,7 @@ interface AppEditorProps {
 }
 
 function AppEditor({ initial, isNew, connectedAccounts, onDone }: AppEditorProps) {
+  const t = useT();
   const { mutate } = useMicrosoftAppSettings();
   const [form, setForm] = useState(initial);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +97,7 @@ function AppEditor({ initial, isNew, connectedAccounts, onDone }: AppEditorProps
       await mutate();
       onDone();
     } catch (saveError) {
-      setError(resolveErrorMessage(saveError, "Could not save the app."));
+      setError(resolveErrorMessage(saveError, msg("Could not save the app.")));
     } finally {
       setSaving(false);
     }
@@ -112,39 +114,41 @@ function AppEditor({ initial, isNew, connectedAccounts, onDone }: AppEditorProps
       await mutate();
       onDone();
     } catch (deleteError) {
-      setError(resolveErrorMessage(deleteError, "Could not delete the app."));
+      setError(resolveErrorMessage(deleteError, msg("Could not delete the app.")));
     }
   };
 
-  let secretHint = "Leave empty to keep the saved secret.";
+  let secretHint = t("Leave empty to keep the saved secret.");
   if (isNew) {
-    secretHint = "The secret's Value from Entra, not its ID. It is stored encrypted.";
+    secretHint = t("The secret's Value from Entra, not its ID. It is stored encrypted.");
   }
-  let deleteLabel = "Delete";
+  let deleteLabel = t("Delete");
   if (confirmDelete) {
-    deleteLabel = `Confirm: ${pluralize(connectedAccounts, "account", "accounts")} will stop syncing`;
+    deleteLabel = connectedAccounts === 1
+      ? t("Confirm: {count} account will stop syncing", { count: connectedAccounts })
+      : t("Confirm: {count} accounts will stop syncing", { count: connectedAccounts });
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-2xl border border-interactive-border p-4">
       <Field
-        label="Key"
-        hint="Lowercase letters and digits, e.g. oriontek. It cannot change once accounts are connected."
+        label={t("Key")}
+        hint={t("Lowercase letters and digits, e.g. oriontek. It cannot change once accounts are connected.")}
         value={form.key}
         onChange={update("key")}
         disabled={!isNew}
         required
       />
-      <Field label="Organization name" value={form.label} onChange={update("label")} required />
+      <Field label={t("Organization name")} value={form.label} onChange={update("label")} required />
       <Field
-        label="Directory (tenant) ID"
-        hint="Empty for a multi-tenant app."
+        label={t("Directory (tenant) ID")}
+        hint={t("Empty for a multi-tenant app.")}
         value={form.tenantId}
         onChange={update("tenantId")}
       />
-      <Field label="Application (client) ID" value={form.clientId} onChange={update("clientId")} required />
+      <Field label={t("Application (client) ID")} value={form.clientId} onChange={update("clientId")} required />
       <Field
-        label="Client secret"
+        label={t("Client secret")}
         hint={secretHint}
         type="password"
         autoComplete="new-password"
@@ -152,13 +156,13 @@ function AppEditor({ initial, isNew, connectedAccounts, onDone }: AppEditorProps
         onChange={update("clientSecret")}
         required={isNew}
       />
-      {error && <Text size="sm" tone="danger" align="left">{error}</Text>}
+      {error && <Text size="sm" tone="danger" align="left">{t(error)}</Text>}
       <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={saving} className="grow justify-center">
-          <ButtonText>{saving ? "Saving…" : "Save"}</ButtonText>
+          <ButtonText>{saving ? t("Saving…") : t("Save")}</ButtonText>
         </Button>
         <Button type="button" variant="elevated" onClick={onDone} className="justify-center">
-          <ButtonText>Cancel</ButtonText>
+          <ButtonText>{t("Cancel")}</ButtonText>
         </Button>
         {!isNew && (
           <Button type="button" variant="destructive" onClick={handleDelete} className="w-full justify-center">
@@ -171,6 +175,8 @@ function AppEditor({ initial, isNew, connectedAccounts, onDone }: AppEditorProps
 }
 
 function MicrosoftAppsPage() {
+  const t = useT();
+  const locale = useLocale();
   const { data, error, mutate } = useMicrosoftAppSettings();
   const [editing, setEditing] = useState<string | null>(null);
   const apps = data?.apps ?? [];
@@ -179,7 +185,7 @@ function MicrosoftAppsPage() {
     return (
       <div className="flex flex-col gap-1.5">
         <BackButton fallback="/dashboard/settings" />
-        <ErrorState message="Only a settings admin can manage Microsoft apps." onRetry={() => mutate()} />
+        <ErrorState message={t("Only a settings admin can manage Microsoft apps.")} onRetry={() => mutate()} />
       </div>
     );
   }
@@ -190,14 +196,18 @@ function MicrosoftAppsPage() {
     <div className="flex flex-col gap-3">
       <BackButton fallback="/dashboard/settings" />
       <div className="flex flex-col gap-1">
-        <Heading2 as="h1">Microsoft apps</Heading2>
+        <Heading2 as="h1">{t("Microsoft apps")}</Heading2>
         <Text size="sm" tone="muted" align="left">
-          One Entra app registration per organization. Each needs the redirect URI
-          {" "}<code>{`${globalThis.location?.origin ?? ""}/api/sources/callback/outlook`}</code>.
+          {rich(
+            t("One Entra app registration per organization. Each needs the redirect URI <code>{uri}</code>.", {
+              uri: `${globalThis.location?.origin ?? ""}/api/sources/callback/outlook`,
+            }),
+            { code: (chunk) => <code key="uri">{chunk}</code> },
+          )}
         </Text>
       </div>
       {data && !data.encryptionReady && (
-        <Text size="sm" tone="danger" align="left">ENCRYPTION_KEY is not set, so secrets cannot be stored.</Text>
+        <Text size="sm" tone="danger" align="left">{t("ENCRYPTION_KEY is not set, so secrets cannot be stored.")}</Text>
       )}
       <NavigationMenu>
         {apps.map((app) => (
@@ -207,7 +217,7 @@ function MicrosoftAppsPage() {
             </NavigationMenuItemIcon>
             <NavigationMenuItemLabel>{app.label}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing>
-              <Text size="sm" tone="muted">{pluralize(app.connectedAccounts, "account", "accounts")}</Text>
+              <Text size="sm" tone="muted">{pluralize(app.connectedAccounts, t("account"), t("accounts"), locale)}</Text>
             </NavigationMenuItemTrailing>
           </NavigationMenuButtonItem>
         ))}
@@ -215,7 +225,7 @@ function MicrosoftAppsPage() {
           <NavigationMenuItemIcon>
             <Plus size={15} />
           </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Add organization</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("Add organization")}</NavigationMenuItemLabel>
         </NavigationMenuButtonItem>
       </NavigationMenu>
       {editing === "" && (

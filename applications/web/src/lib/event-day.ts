@@ -1,3 +1,5 @@
+import { msg } from "@/i18n";
+
 interface EventStart {
   startTime: Date;
   isAllDay: boolean;
@@ -8,7 +10,7 @@ interface EventEnd {
   isAllDay: boolean;
 }
 
-export const ALL_DAY_LABEL = "All day";
+export const ALL_DAY_LABEL = msg("All day");
 
 const localMidnightOfUtcDate = (instant: Date): Date =>
   new Date(instant.getUTCFullYear(), instant.getUTCMonth(), instant.getUTCDate());

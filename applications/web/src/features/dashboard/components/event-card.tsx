@@ -2,6 +2,7 @@ import { memo } from "react";
 import type { CSSProperties, PropsWithChildren } from "react";
 import { tv } from "tailwind-variants/lite";
 import { cn } from "@/utils/cn";
+import { useLocale, useT } from "@/i18n";
 import { Text } from "@/components/ui/primitives/text";
 import { formatTime, formatTimeRange, formatTimeUntil } from "@/lib/time";
 import { ALL_DAY_LABEL, resolveEventLocalStart } from "@/lib/event-day";
@@ -112,6 +113,8 @@ export const EventCard = memo(function EventCard({
   style,
   color = "ink",
 }: EventCardProps) {
+  const t = useT();
+  const locale = useLocale();
   const title = event.title ?? event.calendarName;
   const classes = cn(eventCard({ layout, past }), EVENT_COLORS[color]);
 
@@ -140,10 +143,10 @@ export const EventCard = memo(function EventCard({
     <div className={classes} style={style}>
       <div className="flex items-center justify-between gap-2">
         <EventText size="sm" muted className="tabular-nums">
-          {event.isAllDay ? ALL_DAY_LABEL : `${formatTime(event.startTime)} - ${formatTime(event.endTime)}`}
+          {event.isAllDay ? t(ALL_DAY_LABEL) : `${formatTime(event.startTime)} - ${formatTime(event.endTime)}`}
         </EventText>
         <EventText size="xs" muted className="tabular-nums whitespace-nowrap">
-          {formatTimeUntil(resolveEventLocalStart(event))}
+          {formatTimeUntil(resolveEventLocalStart(event), locale)}
         </EventText>
       </div>
       <EventText size="sm" className="truncate font-semibold">
@@ -189,6 +192,7 @@ interface EventPillOverflowProps {
 }
 
 export function EventPillOverflow({ count }: EventPillOverflowProps) {
+  const t = useT();
   return (
     <Text
       as="span"
@@ -197,7 +201,7 @@ export function EventPillOverflow({ count }: EventPillOverflowProps) {
       className="flex shrink-0 items-center truncate px-1.5"
       style={{ height: EVENT_PILL_HEIGHT_PX }}
     >
-      +{count} more
+      {t("+{count} more", { count })}
     </Text>
   );
 }

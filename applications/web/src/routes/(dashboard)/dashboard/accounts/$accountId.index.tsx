@@ -31,6 +31,7 @@ import { DashboardSection } from "@/components/ui/primitives/dashboard-heading";
 import { pluralize } from "@/lib/pluralize";
 import { resolveErrorMessage } from "@/utils/errors";
 import { canRefreshCalendars } from "@/utils/accounts";
+import { msg, useLocale, useT } from "@/i18n";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/accounts/$accountId/",
@@ -39,8 +40,10 @@ export const Route = createFileRoute(
 });
 
 function CalendarList({ calendars, accountId }: { calendars: CalendarSource[]; accountId: string }) {
+  const t = useT();
+
   if (calendars.length === 0) {
-    return <NavigationMenuEmptyItem>No calendars</NavigationMenuEmptyItem>;
+    return <NavigationMenuEmptyItem>{t("No calendars")}</NavigationMenuEmptyItem>;
   }
   return calendars.map((calendar) => (
     <NavigationMenuLinkItem
@@ -54,17 +57,19 @@ function CalendarList({ calendars, accountId }: { calendars: CalendarSource[]; a
       <NavigationMenuItemLabel>
         {calendar.name}
         {calendar.providerMissingSince && (
-          <Text as="span" size="sm" tone="danger"> (not found at provider)</Text>
+          <Text as="span" size="sm" tone="danger"> {t("(not found at provider)")}</Text>
         )}
       </NavigationMenuItemLabel>
       <NavigationMenuItemTrailing>
-        {calendar.unavailableSince && <Text size="sm" tone="muted">Unavailable</Text>}
+        {calendar.unavailableSince && <Text size="sm" tone="muted">{t("Unavailable")}</Text>}
       </NavigationMenuItemTrailing>
     </NavigationMenuLinkItem>
   ));
 }
 
 function RefreshCalendarsItem({ accountId }: { accountId: string }) {
+  const t = useT();
+  const locale = useLocale();
   const { mutate: globalMutate } = useSWRConfig();
   const [isRefreshing, startRefreshTransition] = useTransition();
   const [result, setResult] = useState<string | null>(null);
@@ -84,13 +89,15 @@ function RefreshCalendarsItem({ accountId }: { accountId: string }) {
           restored: body.restored,
         });
         setResult(
-          `${pluralize(body.imported, "new calendar")} imported, `
-          + `${pluralize(body.missing, "calendar")} not found at the provider, `
-          + `${pluralize(body.restored, "calendar")} back.`,
+          t("{imported} imported, {missing} not found at the provider, {restored} back.", {
+            imported: pluralize(body.imported, t("new calendar"), t("new calendars"), locale),
+            missing: pluralize(body.missing, t("calendar"), t("calendars"), locale),
+            restored: pluralize(body.restored, t("calendar"), t("calendars"), locale),
+          }),
         );
         await invalidateAccountsAndSources(globalMutate, `/api/accounts/${accountId}`);
       } catch (err) {
-        setRefreshError(resolveErrorMessage(err, "Failed to refresh calendars."));
+        setRefreshError(resolveErrorMessage(err, msg("Failed to refresh calendars.")));
       }
     });
   };
@@ -98,15 +105,17 @@ function RefreshCalendarsItem({ accountId }: { accountId: string }) {
   return (
     <>
       <NavigationMenuButtonItem onClick={handleRefresh} disabled={isRefreshing}>
-        <Text size="sm">{isRefreshing ? "Refreshing…" : "Refresh Calendars"}</Text>
+        <Text size="sm">{isRefreshing ? t("Refreshing…") : t("Refresh Calendars")}</Text>
       </NavigationMenuButtonItem>
       {result && <Text size="sm" tone="muted" className="px-0.5">{result}</Text>}
-      {refreshError && <Text size="sm" tone="danger" className="px-0.5">{refreshError}</Text>}
+      {refreshError && <Text size="sm" tone="danger" className="px-0.5">{t(refreshError)}</Text>}
     </>
   );
 }
 
 function AccountDetailPage() {
+  const t = useT();
+  const locale = useLocale();
   const { accountId } = Route.useParams();
   const needsReauth = useReauthAccounts().some((account) => account.id === accountId);
   const navigate = useNavigate();
@@ -137,7 +146,7 @@ function AccountDetailPage() {
         await invalidateAccountsAndSources(globalMutate, `/api/accounts/${accountId}`);
         navigate({ to: "/dashboard" });
       } catch (err) {
-        setDeleteError(resolveErrorMessage(err, "Failed to delete account."));
+        setDeleteError(resolveErrorMessage(err, msg("Failed to delete account.")));
       }
     });
   };
@@ -161,40 +170,42 @@ function AccountDetailPage() {
       </StickyPageHeader>
       <PageBody className="gap-1.5">
         <DashboardSection
-          title="Account Information"
-          description="View details about the account and its calendars."
+          title={t("Account Information")}
+          description={t("View details about the account and its calendars.")}
         />
         <MenuGate
           active={needsReauth}
           tone="attention"
-          hint="Authorization for this account has been lost,"
+          hint={t("Authorization for this account has been lost,")}
           action={{
-            label: "click here to restore access",
+            label: t("click here to restore access"),
             to: `/dashboard/accounts/${accountId}/reconnect`,
             trailing: ".",
           }}
         >
           <NavigationMenu>
             <MetadataRow
-              label="Status"
-              value={needsReauth ? "Needs Reauthentication" : "Healthy"}
+              label={t("Status")}
+              value={needsReauth ? t("Needs Reauthentication") : t("Healthy")}
               tone={needsReauth ? "attention" : undefined}
               to={needsReauth ? `/dashboard/accounts/${accountId}/reconnect` : undefined}
             />
-            <MetadataRow label="Resource Type" value="Account" />
-            <MetadataRow label="Calendar Count" value={String(calendars.length)} />
-            <MetadataRow label="Identifier" value={account.accountIdentifier ?? ""} truncate />
-            <MetadataRow label="Provider" value={account.providerName} />
-            <MetadataRow label="Authenticated" value={account.authType} />
-            <MetadataRow label="Connected" value={formatDate(account.createdAt)} />
+            <MetadataRow label={t("Resource Type")} value={t("Account")} />
+            <MetadataRow label={t("Calendar Count")} value={String(calendars.length)} />
+            <MetadataRow label={t("Identifier")} value={account.accountIdentifier ?? ""} truncate />
+            <MetadataRow label={t("Provider")} value={account.providerName} />
+            <MetadataRow label={t("Authenticated")} value={account.authType} />
+            <MetadataRow label={t("Connected")} value={formatDate(account.createdAt, locale)} />
             {account.calendarsRefreshedAt && (
-              <MetadataRow label="Calendars Checked" value={formatDate(account.calendarsRefreshedAt)} />
+              <MetadataRow label={t("Calendars Checked")} value={formatDate(account.calendarsRefreshedAt, locale)} />
             )}
           </NavigationMenu>
         </MenuGate>
         <DashboardSection
-          title="Account Calendars"
-          description={<>This account has {pluralize(calendars.length, "calendar")} attached to it, choose a calendar below to view more details and configure it. Calendars no longer found at the provider are noted below.</>}
+          title={t("Account Calendars")}
+          description={calendars.length === 1
+            ? t("This account has {count} calendar attached to it, choose a calendar below to view more details and configure it. Calendars no longer found at the provider are noted below.", { count: calendars.length })
+            : t("This account has {count} calendars attached to it, choose a calendar below to view more details and configure it. Calendars no longer found at the provider are noted below.", { count: calendars.length })}
         />
         <NavigationMenu>
           <CalendarList calendars={calendars} accountId={accountId} />
@@ -209,13 +220,13 @@ function AccountDetailPage() {
             <NavigationMenuItemIcon>
               <Trash2 size={15} className="text-destructive" />
             </NavigationMenuItemIcon>
-            <Text size="sm" tone="danger">Delete Account</Text>
+            <Text size="sm" tone="danger">{t("Delete Account")}</Text>
           </NavigationMenuButtonItem>
         </NavigationMenu>
-        {deleteError && <Text size="sm" tone="danger">{deleteError}</Text>}
+        {deleteError && <Text size="sm" tone="danger">{t(deleteError)}</Text>}
         <DeleteConfirmation
-          title="Delete calendar account?"
-          description="This will remove the account and all its calendars. Any sync profiles using these calendars will be affected."
+          title={t("Delete calendar account?")}
+          description={t("This will remove the account and all its calendars. Any sync profiles using these calendars will be affected.")}
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
           deleting={isDeleting}

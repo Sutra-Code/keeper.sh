@@ -12,26 +12,28 @@ import {
   NavigationMenuItemLabel,
   NavigationMenuItemTrailing,
 } from "@/components/ui/composites/navigation-menu/navigation-menu-items";
+import { useT } from "@/i18n";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/connect/")({
   component: ConnectPage,
 });
 
 function ConnectPage() {
+  const t = useT();
   const { data: entitlements } = useEntitlements();
   const atLimit = !canAddMore(entitlements?.accounts);
 
   return (
     <div className="flex flex-col gap-1.5">
       <BackButton />
-      <PremiumGate locked={atLimit} hint="Account limit reached.">
+      <PremiumGate locked={atLimit} hint={t("Account limit reached.")}>
         <NavigationMenu>
           <div data-visitors-event={ANALYTICS_EVENTS.calendar_connect_started} data-visitors-provider="ical">
             <NavigationMenuLinkItem to="/dashboard/connect/ical-link" disabled={atLimit}>
               <NavigationMenuItemIcon>
                 <LinkIcon size={15} />
               </NavigationMenuItemIcon>
-              <NavigationMenuItemLabel>Subscribe with a calendar link</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>{t("Subscribe with a calendar link")}</NavigationMenuItemLabel>
               <NavigationMenuItemTrailing />
             </NavigationMenuLinkItem>
           </div>
@@ -42,7 +44,7 @@ function ConnectPage() {
               <NavigationMenuItemIcon>
                 <img src="/integrations/icon-google.svg" alt="" width={15} height={15} />
               </NavigationMenuItemIcon>
-              <NavigationMenuItemLabel>Connect Google Calendar</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>{t("Connect Google Calendar")}</NavigationMenuItemLabel>
               <NavigationMenuItemTrailing />
             </NavigationMenuLinkItem>
           </div>
@@ -51,7 +53,7 @@ function ConnectPage() {
               <NavigationMenuItemIcon>
                 <img src="/integrations/icon-outlook.svg" alt="" width={15} height={15} />
               </NavigationMenuItemIcon>
-              <NavigationMenuItemLabel>Connect Outlook or Microsoft 365</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>{t("Connect Outlook or Microsoft 365")}</NavigationMenuItemLabel>
               <NavigationMenuItemTrailing />
             </NavigationMenuLinkItem>
           </div>
@@ -60,7 +62,7 @@ function ConnectPage() {
               <NavigationMenuItemIcon>
                 <img src="/integrations/icon-icloud.svg" alt="" width={15} height={15} />
               </NavigationMenuItemIcon>
-              <NavigationMenuItemLabel>Connect iCloud</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>{t("Connect iCloud")}</NavigationMenuItemLabel>
               <NavigationMenuItemTrailing />
             </NavigationMenuLinkItem>
           </div>
@@ -69,7 +71,7 @@ function ConnectPage() {
               <NavigationMenuItemIcon>
                 <img src="/integrations/icon-fastmail.svg" alt="" width={15} height={15} />
               </NavigationMenuItemIcon>
-              <NavigationMenuItemLabel>Connect Fastmail</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>{t("Connect Fastmail")}</NavigationMenuItemLabel>
               <NavigationMenuItemTrailing />
             </NavigationMenuLinkItem>
           </div>
@@ -80,7 +82,7 @@ function ConnectPage() {
               <NavigationMenuItemIcon>
                 <Calendar size={15} />
               </NavigationMenuItemIcon>
-              <NavigationMenuItemLabel>Connect a CalDAV server</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>{t("Connect a CalDAV server")}</NavigationMenuItemLabel>
               <NavigationMenuItemTrailing />
             </NavigationMenuLinkItem>
           </div>

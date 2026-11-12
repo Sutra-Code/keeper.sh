@@ -89,6 +89,7 @@ import {
   getSyncRangeLabel,
   SYNC_RANGE_OPTIONS,
 } from "@/features/dashboard/components/sync-range-options";
+import { msg, rich, useLocale, useT } from "@/i18n";
 
 
 export const Route = createFileRoute(
@@ -104,19 +105,19 @@ interface SyncSetting {
 }
 
 const SYNC_SETTINGS: SyncSetting[] = [
-  { field: "excludeEventDescription", label: "Sync Event Description", matchesField: false },
-  { field: "excludeEventLocation", label: "Sync Event Location", matchesField: false },
-  { field: "markEventsAsPrivate", label: "Mark Events as Private", matchesField: true },
-  { field: "disableEventReminders", label: "Disable Reminders", matchesField: true },
+  { field: "excludeEventDescription", label: msg("Sync Event Description"), matchesField: false },
+  { field: "excludeEventLocation", label: msg("Sync Event Location"), matchesField: false },
+  { field: "markEventsAsPrivate", label: msg("Mark Events as Private"), matchesField: true },
+  { field: "disableEventReminders", label: msg("Disable Reminders"), matchesField: true },
 ];
 
 const EXCLUSION_SETTINGS: SyncSetting[] = [
-  { field: "excludeAllDayEvents", label: "Exclude All Day Events", matchesField: true },
+  { field: "excludeAllDayEvents", label: msg("Exclude All Day Events"), matchesField: true },
 ];
 
 const PROVIDER_EXCLUSION_SETTINGS: SyncSetting[] = [
-  { field: "excludeFocusTime", label: "Exclude Focus Time Events", matchesField: true },
-  { field: "excludeOutOfOffice", label: "Exclude Out of Office Events", matchesField: true },
+  { field: "excludeFocusTime", label: msg("Exclude Focus Time Events"), matchesField: true },
+  { field: "excludeOutOfOffice", label: msg("Exclude Out of Office Events"), matchesField: true },
 ];
 
 const PROVIDERS_WITH_EXTRA_SETTINGS = new Set(["google"]);
@@ -159,6 +160,7 @@ function useSeedCalendarDetail(calendarId: string, calendar: CalendarDetail | un
 }
 
 function CalendarDetailPage() {
+  const t = useT();
   const { accountId, calendarId } = Route.useParams();
   const { data: account, isLoading: accountLoading, error: accountError, mutate: mutateAccount } = useSWR<CalendarAccount>(`/api/accounts/${accountId}`);
   const { data: calendar, isLoading: calendarLoading, error: calendarError } = useSWR<CalendarDetail>(`/api/sources/${calendarId}`);
@@ -194,8 +196,8 @@ function CalendarDetailPage() {
         {isPullCapable && (
           <>
             <DashboardSection
-              title="Send Events to Calendars"
-              description="Select which calendars should receive events from this calendar."
+              title={t("Send Events to Calendars")}
+              description={t("Select which calendars should receive events from this calendar.")}
             />
             <DestinationsSection calendarId={calendarId} />
           </>
@@ -213,6 +215,7 @@ function CalendarDetailPage() {
 type SyncRangeField = "syncHistoricRange" | "syncFutureRange";
 
 function SyncWindowSection({ calendarId }: { calendarId: string }) {
+  const t = useT();
   const { data: entitlements } = useEntitlements();
   const locked = Boolean(entitlements && !entitlements.canUseEventFilters);
   const disabled = !entitlements || locked;
@@ -220,21 +223,21 @@ function SyncWindowSection({ calendarId }: { calendarId: string }) {
   return (
     <>
       <DashboardSection
-        title="Sync Window"
-        description="Choose how far back and ahead Keeper syncs events into this calendar. Narrowing a range removes already-synced events outside it from this calendar."
+        title={t("Sync Window")}
+        description={t("Choose how far back and ahead SutraCode Calendar syncs events into this calendar. Narrowing a range removes already-synced events outside it from this calendar.")}
       />
-      <PremiumGate locked={locked} hint="Custom sync windows are a Pro feature.">
+      <PremiumGate locked={locked} hint={t("Custom sync windows are a Pro feature.")}>
         <NavigationMenu>
           <SyncRangeItem
             calendarId={calendarId}
             field="syncHistoricRange"
-            label="Sync Historic Events"
+            label={t("Sync Historic Events")}
             locked={disabled}
           />
           <SyncRangeItem
             calendarId={calendarId}
             field="syncFutureRange"
-            label="Sync Future Events"
+            label={t("Sync Future Events")}
             locked={disabled}
           />
         </NavigationMenu>
@@ -254,6 +257,7 @@ function SyncRangeItem({
   label: string;
   locked: boolean;
 }) {
+  const t = useT();
   const store = useStore();
   const calendar = useAtomValue(calendarDetailAtom);
   const loadedCalendarId = useAtomValue(calendarDetailLoadedAtom);
@@ -284,7 +288,7 @@ function SyncRangeItem({
           <NavigationMenuItemLabel>{label}</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing>
             <Text size="sm" tone={locked ? "disabled" : "muted"}>
-              {getSyncRangeLabel(selectedRange)}
+              {t(getSyncRangeLabel(selectedRange))}
             </Text>
           </NavigationMenuItemTrailing>
         </>
@@ -311,6 +315,7 @@ function SyncRangeOptionItem({
   selected: boolean;
   onSelect: (range: SyncRange) => void;
 }) {
+  const t = useT();
   const { close } = usePopover();
 
   return (
@@ -320,7 +325,7 @@ function SyncRangeOptionItem({
         close();
       }}
     >
-      <NavigationMenuItemLabel>{option.label}</NavigationMenuItemLabel>
+      <NavigationMenuItemLabel>{t(option.label)}</NavigationMenuItemLabel>
       <NavigationMenuItemTrailing>
         {selected && <CheckIcon size={14} />}
       </NavigationMenuItemTrailing>
@@ -372,11 +377,13 @@ function CalendarTitle() {
 }
 
 function RenameSection({ calendarId }: { calendarId: string }) {
+  const t = useT();
+
   return (
     <>
       <DashboardSection
-        title="Calendar Name"
-        description="Click below to rename the calendar within Keeper.sh. This does not affect the calendar outside of the Keeper.sh ecosystem."
+        title={t("Calendar Name")}
+        description={t("Click below to rename the calendar within SutraCode Calendar. This does not affect the calendar outside of the SutraCode Calendar ecosystem.")}
       />
       <NavigationMenu>
         <RenameItem calendarId={calendarId} />
@@ -421,6 +428,7 @@ function RenameItemValue() {
 
 /** Leads the page when the owning account has lost authorization; this calendar cannot sync until it is restored. */
 function ReauthNotice({ account }: { account: CalendarAccount }) {
+  const t = useT();
   const needsReauth = useReauthAccounts().some((entry) => entry.id === account.id);
   if (!needsReauth) return null;
 
@@ -431,32 +439,34 @@ function ReauthNotice({ account }: { account: CalendarAccount }) {
           <NavigationMenuItemIcon>
             <TriangleAlert size={15} />
           </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Reconnect 1 Account</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("Reconnect 1 Account")}</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing />
         </NavigationMenuLinkItem>
       </NavigationMenu>
       <MenuHint>
-        Authorization for this account has been lost. This calendar will drift out of date until
-        access is restored.
+        {t("Authorization for this account has been lost. This calendar will drift out of date until access is restored.")}
       </MenuHint>
     </>
   );
 }
 
 function ProviderMissingNotice() {
+  const t = useT();
+  const locale = useLocale();
   const missingSince = useAtomValue(calendarMissingSinceAtom);
   if (!missingSince) return null;
 
   return (
     <Text size="sm" tone="danger" className="px-0.5">
-      This calendar could not be found at the provider (since {formatDate(missingSince)}) - it
-      may have been deleted or renamed there. Refresh the connection to check again, or remove
-      the calendar below.
+      {t("This calendar could not be found at the provider (since {date}) - it may have been deleted or renamed there. Refresh the connection to check again, or remove the calendar below.", {
+        date: formatDate(missingSince, locale),
+      })}
     </Text>
   );
 }
 
 function DeleteCalendarSection({ accountId, calendarId }: { accountId: string; calendarId: string }) {
+  const t = useT();
   const { mutate: globalMutate } = useSWRConfig();
   const navigate = useNavigate();
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -473,7 +483,7 @@ function DeleteCalendarSection({ accountId, calendarId }: { accountId: string; c
         await invalidateAccountsAndSources(globalMutate, `/api/accounts/${accountId}`);
         navigate({ to: `/dashboard/accounts/${accountId}` });
       } catch (err) {
-        setDeleteError(resolveErrorMessage(err, "Failed to delete calendar."));
+        setDeleteError(resolveErrorMessage(err, msg("Failed to delete calendar.")));
       }
     });
   };
@@ -481,18 +491,18 @@ function DeleteCalendarSection({ accountId, calendarId }: { accountId: string; c
   return (
     <>
       <DashboardSection
-        title="Remove Calendar"
-        description="Stop syncing this calendar and remove it from Keeper.sh. It will not be imported again when the account's calendars are refreshed."
+        title={t("Remove Calendar")}
+        description={t("Stop syncing this calendar and remove it from SutraCode Calendar. It will not be imported again when the account's calendars are refreshed.")}
       />
       <NavigationMenu>
         <NavigationMenuButtonItem onClick={() => setDeleteOpen(true)}>
-          <Text size="sm" tone="danger">Delete Calendar</Text>
+          <Text size="sm" tone="danger">{t("Delete Calendar")}</Text>
         </NavigationMenuButtonItem>
       </NavigationMenu>
-      {deleteError && <Text size="sm" tone="danger" className="px-0.5">{deleteError}</Text>}
+      {deleteError && <Text size="sm" tone="danger" className="px-0.5">{t(deleteError)}</Text>}
       <DeleteConfirmation
-        title="Delete this calendar?"
-        description="This removes the calendar and its sync history from Keeper.sh. Any sync profiles using it will be affected."
+        title={t("Delete this calendar?")}
+        description={t("This removes the calendar and its sync history from SutraCode Calendar. Any sync profiles using it will be affected.")}
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         deleting={isDeleting}
@@ -516,6 +526,7 @@ function DestinationsSeed({ calendarId }: { calendarId: string }) {
 }
 
 function DestinationsSection({ calendarId }: { calendarId: string }) {
+  const t = useT();
   const { data: allCalendars } = useSWR<CalendarSource[]>("/api/sources");
   const { data: entitlements } = useEntitlements();
   const atLimit = !canAddMore(entitlements?.mappings);
@@ -530,7 +541,7 @@ function DestinationsSection({ calendarId }: { calendarId: string }) {
       <DestinationsSeed calendarId={calendarId} />
       <NavigationMenu>
         {pushCalendars.length === 0 ? (
-          <NavigationMenuEmptyItem>No destination calendars available</NavigationMenuEmptyItem>
+          <NavigationMenuEmptyItem>{t("No destination calendars available")}</NavigationMenuEmptyItem>
         ) : (
           pushCalendars.map((calendar) => (
             <DestinationCheckboxItem
@@ -544,7 +555,7 @@ function DestinationsSection({ calendarId }: { calendarId: string }) {
           ))
         )}
       </NavigationMenu>
-      {atLimit && <PremiumHint>Mapping limit reached.</PremiumHint>}
+      {atLimit && <PremiumHint>{t("Mapping limit reached.")}</PremiumHint>}
     </>
   );
 }
@@ -614,6 +625,7 @@ function DestinationCheckboxIndicator({ destinationId }: { destinationId: string
 }
 
 function SyncSettingsSection({ calendarId }: { calendarId: string }) {
+  const t = useT();
   const { data: entitlements } = useEntitlements();
   const locked = Boolean(entitlements && !entitlements.canUseEventFilters);
   const calendarType = useAtomValue(calendarTypeAtom);
@@ -621,10 +633,12 @@ function SyncSettingsSection({ calendarId }: { calendarId: string }) {
   return (
     <>
       <DashboardSection
-        title="Sync Settings"
-        description={<>Choose which event details are synced to destination calendars. Use <Text as="span" size="sm" className="text-template inline">{"{{calendar_name}}"}</Text> or <Text as="span" size="sm" className="text-template inline">{"{{event_name}}"}</Text> in text fields for dynamic values.</>}
+        title={t("Sync Settings")}
+        description={rich(t("Choose which event details are synced to destination calendars. Use <var>{{calendar_name}}</var> or <var>{{event_name}}</var> in text fields for dynamic values."), {
+          var: (chunk) => <Text key={chunk} as="span" size="sm" className="text-template inline">{chunk}</Text>,
+        })}
       />
-      <PremiumGate locked={locked} hint="Advanced sync settings are a Pro feature.">
+      <PremiumGate locked={locked} hint={t("Advanced sync settings are a Pro feature.")}>
         <NavigationMenu>
           <SyncEventNameTemplateItem calendarId={calendarId} locked={locked} />
           <SyncEventNameToggle calendarId={calendarId} locked={locked} />
@@ -634,7 +648,7 @@ function SyncSettingsSection({ calendarId }: { calendarId: string }) {
               key={setting.field}
               calendarId={calendarId}
               field={setting.field}
-              label={setting.label}
+              label={t(setting.label)}
               matchesField={setting.matchesField}
               locked={locked}
             />
@@ -663,6 +677,7 @@ function ProviderSyncSettings({
 }
 
 function TreatFullDayTimedEventsToggle({ calendarId, locked }: { calendarId: string; locked: boolean }) {
+  const t = useT();
   const store = useStore();
   const variant = use(MenuVariantContext);
 
@@ -695,7 +710,7 @@ function TreatFullDayTimedEventsToggle({ calendarId, locked }: { calendarId: str
           onClick={handleClick}
           className={navigationMenuItemStyle({ variant, interactive: !locked })}
         >
-          <NavigationMenuItemLabel>Sync Full-Day Events as All-Day</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("Sync Full-Day Events as All-Day")}</NavigationMenuItemLabel>
           <TreatFullDayTimedEventsToggleIndicator disabled={locked} />
         </button>
       </ItemDisabledContext>
@@ -720,13 +735,14 @@ function SyncEventNameDisabledProvider({ locked, children }: { locked: boolean; 
 }
 
 function SyncEventNameTemplateItem({ calendarId, locked }: { calendarId: string; locked: boolean }) {
+  const t = useT();
   const store = useStore();
   const customEventName = useAtomValue(customEventNameAtom);
 
   return (
     <SyncEventNameDisabledProvider locked={locked}>
       <NavigationMenuEditableTemplateItem
-        label="Event Name"
+        label={t("Event Name")}
         disabled={locked}
         value={customEventName || "{{event_name}}"}
         renderInput={(live) => (
@@ -771,6 +787,7 @@ function SyncEventNameTemplateValue() {
 }
 
 function SyncEventNameToggle({ calendarId, locked }: { calendarId: string; locked: boolean }) {
+  const t = useT();
   const store = useStore();
   const variant = use(MenuVariantContext);
 
@@ -798,7 +815,7 @@ function SyncEventNameToggle({ calendarId, locked }: { calendarId: string; locke
           onClick={handleClick}
           className={navigationMenuItemStyle({ variant, interactive: !locked })}
         >
-          <NavigationMenuItemLabel>Sync Event Name</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("Sync Event Name")}</NavigationMenuItemLabel>
           <SyncEventNameToggleIndicator disabled={locked} />
         </button>
       </ItemDisabledContext>
@@ -819,6 +836,7 @@ function SyncEventNameToggleIndicator({ disabled }: { disabled: boolean }) {
 }
 
 function ExclusionsSection({ calendarId, provider }: { calendarId: string; provider: string }) {
+  const t = useT();
   const { data: entitlements } = useEntitlements();
   const locked = entitlements ? !entitlements.canUseEventFilters : false;
   const hasExtraSettings = PROVIDERS_WITH_EXTRA_SETTINGS.has(provider);
@@ -829,17 +847,20 @@ function ExclusionsSection({ calendarId, provider }: { calendarId: string; provi
   return (
     <>
       <DashboardSection
-        title="Exclusions"
-        description={`Choose which events to exclude from syncing. Separate title keywords with commas. Up to ${MAX_EXCLUDE_TITLE_KEYWORDS} keywords of ${MAX_EXCLUDE_TITLE_KEYWORD_LENGTH} characters each, matched ignoring case.`}
+        title={t("Exclusions")}
+        description={t("Choose which events to exclude from syncing. Separate title keywords with commas. Up to {count} keywords of {length} characters each, matched ignoring case.", {
+          count: MAX_EXCLUDE_TITLE_KEYWORDS,
+          length: MAX_EXCLUDE_TITLE_KEYWORD_LENGTH,
+        })}
       />
-      <PremiumGate locked={locked} hint="Event exclusions are a Pro feature.">
+      <PremiumGate locked={locked} hint={t("Event exclusions are a Pro feature.")}>
         <NavigationMenu>
           {exclusionSettings.map((setting) => (
             <ExcludeFieldToggle
               key={setting.field}
               calendarId={calendarId}
               field={setting.field}
-              label={setting.label}
+              label={t(setting.label)}
               matchesField={setting.matchesField}
               locked={locked}
             />
@@ -861,6 +882,7 @@ function ExcludeAvailabilitiesItem({
   provider: string;
   locked: boolean;
 }) {
+  const t = useT();
   const store = useStore();
   const excluded = useAtomValue(excludeAvailabilitiesAtom);
   const options = getExcludableAvailabilities(provider);
@@ -879,7 +901,7 @@ function ExcludeAvailabilitiesItem({
 
   const summary = options
     .filter(({ value }) => excluded.includes(value))
-    .map(({ label }) => label)
+    .map(({ label }) => t(label))
     .join(", ");
 
   return (
@@ -887,10 +909,10 @@ function ExcludeAvailabilitiesItem({
       disabled={locked}
       trigger={
         <>
-          <NavigationMenuItemLabel>Exclude by Status</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("Exclude by Status")}</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing>
             <Text size="sm" tone={locked ? "disabled" : "muted"}>
-              {summary || "None"}
+              {summary || t("None")}
             </Text>
           </NavigationMenuItemTrailing>
         </>
@@ -901,7 +923,7 @@ function ExcludeAvailabilitiesItem({
           key={option.value}
           onClick={() => toggleAvailability(option.value)}
         >
-          <NavigationMenuItemLabel>{option.label}</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t(option.label)}</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing>
             {excluded.includes(option.value) && <CheckIcon size={14} />}
           </NavigationMenuItemTrailing>
@@ -912,12 +934,13 @@ function ExcludeAvailabilitiesItem({
 }
 
 function ExcludeTitleKeywordsItem({ calendarId, locked }: { calendarId: string; locked: boolean }) {
+  const t = useT();
   const store = useStore();
   const keywords = useAtomValue(excludeTitleKeywordsAtom);
 
   return (
     <NavigationMenuEditableItem
-      label="Exclude Titles Containing"
+      label={t("Exclude Titles Containing")}
       value={formatTitleKeywords(keywords)}
       disabled={locked}
       allowEmpty
@@ -938,6 +961,7 @@ function ExcludeTitleKeywordsItem({ calendarId, locked }: { calendarId: string; 
 }
 
 function ExcludeTitleKeywordsValue() {
+  const t = useT();
   const keywords = useAtomValue(excludeTitleKeywordsAtom);
   const variant = use(MenuVariantContext);
   const disabled = use(ItemDisabledContext);
@@ -948,7 +972,7 @@ function ExcludeTitleKeywordsValue() {
       tone={(disabled ? DISABLED_LABEL_TONE : LABEL_TONE)[variant ?? "default"]}
       className="min-w-0 flex-1 truncate text-right"
     >
-      {keywords.length > 0 ? formatTitleKeywords(keywords) : "None"}
+      {keywords.length > 0 ? formatTitleKeywords(keywords) : t("None")}
     </Text>
   );
 }
@@ -1012,6 +1036,8 @@ function ExcludeFieldToggleIndicator({ field, matchesField, disabled }: { field:
 
 
 function CalendarInfoSection({ account, accountId }: { account: CalendarAccount; accountId: string }) {
+  const t = useT();
+  const locale = useLocale();
   const calendar = useAtomValue(calendarDetailAtom);
 
   if (!calendar) return null;
@@ -1019,32 +1045,32 @@ function CalendarInfoSection({ account, accountId }: { account: CalendarAccount;
   return (
     <>
       <DashboardSection
-        title="Calendar Information"
-        description="View details about the calendar."
+        title={t("Calendar Information")}
+        description={t("View details about the calendar.")}
       />
       <NavigationMenu>
-        <MetadataRow label="Resource Type" value="Calendar" />
-        <MetadataRow label="Type" value={calendar.calendarType} />
-        <MetadataRow label="Capabilities" value={calendar.capabilities.join(", ")} />
+        <MetadataRow label={t("Resource Type")} value={t("Calendar")} />
+        <MetadataRow label={t("Type")} value={calendar.calendarType} />
+        <MetadataRow label={t("Capabilities")} value={calendar.capabilities.join(", ")} />
         {calendar.unavailableSince && (
           <MetadataRow
-            label="Availability"
-            value={`Unavailable since ${formatDate(calendar.unavailableSince)}`}
+            label={t("Availability")}
+            value={t("Unavailable since {date}", { date: formatDate(calendar.unavailableSince, locale) })}
             truncate
           />
         )}
         {calendar.originalName && (
-          <MetadataRow label="Original Source Name" value={calendar.originalName} truncate />
+          <MetadataRow label={t("Original Source Name")} value={calendar.originalName} truncate />
         )}
         {calendar.url && (
-          <MetadataRow label="URL" value={calendar.url} truncate />
+          <MetadataRow label={t("URL")} value={calendar.url} truncate />
         )}
         {calendar.calendarUrl && (
-          <MetadataRow label="Calendar URL" value={calendar.calendarUrl} truncate />
+          <MetadataRow label={t("Calendar URL")} value={calendar.calendarUrl} truncate />
         )}
-        <MetadataRow label="Added" value={formatDate(calendar.createdAt)} />
+        <MetadataRow label={t("Added")} value={formatDate(calendar.createdAt, locale)} />
         <MetadataRow
-          label="Account Identifier"
+          label={t("Account Identifier")}
           value={account.accountIdentifier ?? ""}
           truncate
           to={`/dashboard/accounts/${accountId}`}

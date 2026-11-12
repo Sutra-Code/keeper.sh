@@ -21,6 +21,7 @@ import type { AuthCapabilities } from "@/lib/auth-capabilities";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { resolveErrorMessage } from "@/utils/errors";
 import type { SessionUser } from "@/hooks/use-session";
+import { msg, useT, type Translate } from "@/i18n";
 
 interface DeleteAccountModalProps {
   open: boolean;
@@ -40,11 +41,12 @@ const methodKey = (method: ReauthenticationMethod): string => {
 const resolveMethodLabel = (
   method: ReauthenticationMethod,
   capabilities: AuthCapabilities,
+  t: Translate,
 ): string => {
-  if (method.kind === "passkey") return "Confirm with passkey";
-  if (method.provider === "google") return "Continue with Google";
-  if (method.provider === "microsoft") return "Continue with Outlook";
-  return `Continue with ${resolveOidcProviderName(capabilities)}`;
+  if (method.kind === "passkey") return t("Confirm with passkey");
+  if (method.provider === "google") return t("Continue with {provider}", { provider: "Google" });
+  if (method.provider === "microsoft") return t("Continue with {provider}", { provider: "Outlook" });
+  return t("Continue with {provider}", { provider: resolveOidcProviderName(capabilities) });
 };
 
 export function DeleteAccountModal({
@@ -57,6 +59,7 @@ export function DeleteAccountModal({
   passkeyCount,
 }: DeleteAccountModalProps) {
   const navigate = useNavigate();
+  const t = useT();
   const passwordRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<DeleteAccountStep>("confirm");
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +104,7 @@ export function DeleteAccountModal({
     }
   };
 
-  const handleDelete = () => runSafely(runDeletion, "Failed to delete account.");
+  const handleDelete = () => runSafely(runDeletion, msg("Failed to delete account."));
 
   const handleReauthenticate = (method: ReauthenticationMethod) =>
     runSafely(async () => {
@@ -111,7 +114,7 @@ export function DeleteAccountModal({
         setStep("confirm");
         await runDeletion();
       }
-    }, "Couldn't confirm it's you.");
+    }, msg("Couldn't confirm it's you."));
 
   const handleSignOut = () =>
     runSafely(async () => {
@@ -119,25 +122,25 @@ export function DeleteAccountModal({
       await signOut();
       onOpenChange(false);
       navigate({ to: "/login" });
-    }, "Couldn't sign out.");
+    }, msg("Couldn't sign out."));
 
   const needsSignOut = step === "reauthenticate" && methods.length === 0;
 
   return (
     <Modal open={open} onOpenChange={handleOpenChange}>
       <ModalContent>
-        <ModalTitle>Delete account?</ModalTitle>
+        <ModalTitle>{t("Delete account?")}</ModalTitle>
         <ModalDescription>
-          {resolveDeleteAccountDescription({ methodCount: methods.length, step })}
+          {t(resolveDeleteAccountDescription({ methodCount: methods.length, step }))}
         </ModalDescription>
         {step === "confirm" && hasPassword && (
-          <Input ref={passwordRef} type="password" placeholder="Confirm your password" />
+          <Input ref={passwordRef} type="password" placeholder={t("Confirm your password")} />
         )}
-        {error && <Text size="sm" tone="danger">{error}</Text>}
+        {error && <Text size="sm" tone="danger">{t(error)}</Text>}
         <ModalFooter>
           {step === "confirm" && (
             <Button variant="destructive" className="w-full justify-center" onClick={handleDelete} disabled={isWorking}>
-              <ButtonText>{isWorking ? "Deleting..." : "Delete my account"}</ButtonText>
+              <ButtonText>{isWorking ? t("Deleting...") : t("Delete my account")}</ButtonText>
             </Button>
           )}
           {step === "reauthenticate" && methods.map((method) => (
@@ -148,16 +151,16 @@ export function DeleteAccountModal({
               onClick={() => handleReauthenticate(method)}
               disabled={isWorking}
             >
-              <ButtonText>{resolveMethodLabel(method, capabilities)}</ButtonText>
+              <ButtonText>{resolveMethodLabel(method, capabilities, t)}</ButtonText>
             </Button>
           ))}
           {needsSignOut && (
             <Button variant="border" className="w-full justify-center" onClick={handleSignOut} disabled={isWorking}>
-              <ButtonText>Sign out</ButtonText>
+              <ButtonText>{t("Sign out")}</ButtonText>
             </Button>
           )}
           <Button variant="elevated" className="w-full justify-center" onClick={() => handleOpenChange(false)}>
-            <ButtonText>Cancel</ButtonText>
+            <ButtonText>{t("Cancel")}</ButtonText>
           </Button>
         </ModalFooter>
       </ModalContent>

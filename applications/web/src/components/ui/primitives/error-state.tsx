@@ -1,5 +1,6 @@
 import { Text } from "./text";
 import { Button, ButtonText } from "./button";
+import { msg, useT } from "@/i18n";
 
 interface ErrorStateProps {
   message?: string;
@@ -7,17 +8,19 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  message = "Something went wrong. Please try again.",
+  message = msg("Something went wrong. Please try again."),
   onRetry,
 }: ErrorStateProps) {
+  const t = useT();
+
   return (
     <div className="flex flex-col items-center gap-2 py-4">
       <Text size="sm" tone="danger">
-        {message}
+        {t(message)}
       </Text>
       {onRetry && (
         <Button variant="border" size="compact" onClick={onRetry}>
-          <ButtonText>Retry</ButtonText>
+          <ButtonText>{t("Retry")}</ButtonText>
         </Button>
       )}
     </div>

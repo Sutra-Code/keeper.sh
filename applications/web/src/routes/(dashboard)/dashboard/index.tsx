@@ -56,6 +56,7 @@ import { SyncPairRow } from "@/features/onboarding/components/sync-pair-row";
 import { USAGE_CACHE_KEY } from "@/hooks/use-entitlements";
 import { showToastAtom } from "@/state/toast";
 import { useSetAtom } from "jotai";
+import { msg, useLocale, useT } from "@/i18n";
 
 async function loadSubscription(context: {
   fetchApi: <T>(path: string, init?: RequestInit) => Promise<T>;
@@ -114,13 +115,14 @@ function useConnectedToast(accounts: CalendarAccount[] | undefined) {
   const { connected } = Route.useSearch();
   const navigate = useNavigate();
   const showToast = useSetAtom(showToastAtom);
+  const t = useT();
   const account = accounts?.find(({ id }) => id === connected);
 
   useEffect(() => {
     if (!connected || !accounts) return;
-    if (account) showToast(`${account.providerName} connected`);
+    if (account) showToast(t("{provider} connected", { provider: account.providerName }));
     navigate({ replace: true, search: {}, to: "/dashboard" });
-  }, [connected, accounts, account, showToast, navigate]);
+  }, [connected, accounts, account, showToast, navigate, t]);
 }
 
 function DashboardContent() {
@@ -133,6 +135,7 @@ function DashboardContent() {
 }
 
 function Home() {
+  const t = useT();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -155,14 +158,14 @@ function Home() {
             <NavigationMenuItemIcon>
               <MessageSquare size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>Submit feedback</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t("Submit feedback")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing />
           </NavigationMenuLinkItem>
           <NavigationMenuLinkItem to="/dashboard/report">
             <NavigationMenuItemIcon>
               <Bug size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>Report a problem</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t("Report a problem")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing />
           </NavigationMenuLinkItem>
         </NavigationMenu>
@@ -197,6 +200,7 @@ function PlanMenu() {
 }
 
 function useRefreshCalendars() {
+  const t = useT();
   const { mutate: globalMutate } = useSWRConfig();
   const [isRefreshing, startRefreshTransition] = useTransition();
   const [status, setStatus] = useState<RefreshStatus | null>(null);
@@ -213,14 +217,14 @@ function useRefreshCalendars() {
         await invalidateAccountsAndSources(globalMutate);
         startCooldown(result.cooldownSeconds);
 
-        const failures = formatRefreshFailures(result.failed);
+        const failures = formatRefreshFailures(result.failed, t);
         setStatus({
-          message: [formatRefreshSummary(result), failures].filter(Boolean).join(" "),
+          message: [formatRefreshSummary(result, t), failures].filter(Boolean).join(" "),
           tone: failures ? "danger" : "muted",
         });
       } catch (err) {
         setStatus({
-          message: resolveErrorMessage(err, "Failed to refresh calendars."),
+          message: t(resolveErrorMessage(err, msg("Failed to refresh calendars."))),
           tone: "danger",
         });
       }
@@ -249,6 +253,8 @@ function AttentionDot() {
 }
 
 function CalendarsMenu() {
+  const t = useT();
+  const locale = useLocale();
   const reauthIds = new Set(useReauthAccounts().map((account) => account.id));
   const { data: calendarsData, shouldAnimate: animateCalendars, isLoading: calendarsLoading, error, mutate: mutateCalendars } = useAnimatedSWR<CalendarSource[]>("/api/sources");
   const calendars = calendarsData ?? [];
@@ -270,7 +276,7 @@ function CalendarsMenu() {
                 <Calendar size={15} />
               </NavigationMenuItemIcon>
               <NavigationMenuItemLabel>
-                {calendars.length > 0 ? "Calendars" : "No calendars"}
+                {calendars.length > 0 ? t("Calendars") : t("No calendars")}
               </NavigationMenuItemLabel>
               <NavigationMenuItemTrailing>
                 <ProviderIconStack
@@ -285,7 +291,7 @@ function CalendarsMenu() {
             </>
           }
         >
-          {error && <ErrorState message="Failed to load calendars." onRetry={() => mutateCalendars()} />}
+          {error && <ErrorState message={t("Failed to load calendars.")} onRetry={() => mutateCalendars()} />}
           {calendarsLoading && (
             <div className="flex justify-center py-4">
               <LoaderCircle size={16} className="animate-spin text-foreground-muted" />
@@ -323,7 +329,7 @@ function CalendarsMenu() {
                   align="right"
                   className="flex-1 min-w-0 truncate"
                 >
-                  {calendar.unavailableSince ? "Unavailable" : calendar.accountLabel}
+                  {calendar.unavailableSince ? t("Unavailable") : calendar.accountLabel}
                 </Text>
               </NavigationMenuItemTrailing>
             </NavigationMenuLinkItem>
@@ -333,7 +339,7 @@ function CalendarsMenu() {
           <NavigationMenuItemIcon>
             <CalendarPlus size={15} />
           </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Add a calendar</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("Add a calendar")}</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing />
         </NavigationMenuLinkItem>
         <NavigationMenuButtonItem
@@ -344,7 +350,7 @@ function CalendarsMenu() {
             <RefreshCw size={15} />
           </NavigationMenuItemIcon>
           <NavigationMenuItemLabel>
-            {isRefreshing ? "Refreshing..." : "Refresh calendars"}
+            {isRefreshing ? t("Refreshing...") : t("Refresh calendars")}
           </NavigationMenuItemLabel>
           <NavigationMenuItemTrailing>
             {isCoolingDown && <Text size="sm" tone="muted">{secondsRemaining}s</Text>}
@@ -355,16 +361,16 @@ function CalendarsMenu() {
             <NavigationMenuItemIcon>
               <CalendarDays size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>View events</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t("View events")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing>
-              {eventCount != null && <Text size="sm" tone="muted">{pluralize(eventCount, "event")}</Text>}
+              {eventCount != null && <Text size="sm" tone="muted">{pluralize(eventCount, t("event"), t("events"), locale)}</Text>}
             </NavigationMenuItemTrailing>
           </NavigationMenuLinkItem>
           <NavigationMenuLinkItem to="/dashboard/ical">
             <NavigationMenuItemIcon>
               <Link2 size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>iCal feeds</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t("iCal feeds")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing />
           </NavigationMenuLinkItem>
         </AnimatedReveal>
@@ -375,6 +381,7 @@ function CalendarsMenu() {
 }
 
 function AccountsMenu({ onLogout }: { onLogout: () => void }) {
+  const t = useT();
   const reauthAccounts = useReauthAccounts();
   const reauthIds = new Set(reauthAccounts.map((account) => account.id));
   return (
@@ -384,20 +391,21 @@ function AccountsMenu({ onLogout }: { onLogout: () => void }) {
         <NavigationMenuItemIcon>
           <Settings size={15} />
         </NavigationMenuItemIcon>
-        <NavigationMenuItemLabel>Settings</NavigationMenuItemLabel>
+        <NavigationMenuItemLabel>{t("Settings")}</NavigationMenuItemLabel>
         <NavigationMenuItemTrailing />
       </NavigationMenuLinkItem>
       <NavigationMenuButtonItem onClick={onLogout}>
         <NavigationMenuItemIcon>
           <LogOut size={15} />
         </NavigationMenuItemIcon>
-        <NavigationMenuItemLabel>Log out</NavigationMenuItemLabel>
+        <NavigationMenuItemLabel>{t("Log out")}</NavigationMenuItemLabel>
       </NavigationMenuButtonItem>
     </NavigationMenu>
   );
 }
 
 function AccountsPopover({ reauthIds }: { reauthIds: Set<string> }) {
+  const t = useT();
   const { data: accountsData, isLoading: accountsLoading, error: accountsError, mutate: mutateAccounts } = useAnimatedSWR<CalendarAccount[]>("/api/accounts");
   const accounts = accountsData ?? [];
 
@@ -410,7 +418,7 @@ function AccountsPopover({ reauthIds }: { reauthIds: Set<string> }) {
             <User size={15} />
           </NavigationMenuItemIcon>
           <NavigationMenuItemLabel>
-            {accounts.length > 0 ? "Calendar sources" : "No calendar sources"}
+            {accounts.length > 0 ? t("Calendar sources") : t("No calendar sources")}
           </NavigationMenuItemLabel>
           <NavigationMenuItemTrailing>
             <ProviderIconStack
@@ -425,7 +433,7 @@ function AccountsPopover({ reauthIds }: { reauthIds: Set<string> }) {
         </>
       }
     >
-      {accountsError && <ErrorState message="Failed to load accounts." onRetry={() => mutateAccounts()} />}
+      {accountsError && <ErrorState message={t("Failed to load accounts.")} onRetry={() => mutateAccounts()} />}
       {accountsLoading && (
         <div className="flex justify-center py-4">
           <LoaderCircle size={16} className="animate-spin text-foreground-muted" />

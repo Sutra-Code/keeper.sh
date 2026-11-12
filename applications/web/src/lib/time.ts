@@ -1,32 +1,30 @@
+import { intlLocale, translate, type Locale } from "@/i18n";
+
 const MINS_PER_HOUR = 60;
 const HOURS_PER_DAY = 24;
 const MINS_PER_DAY = MINS_PER_HOUR * HOURS_PER_DAY;
 
-const getSuffixAndPrefix = (
-  diffMins: number,
-): { suffix: string; prefix: string } => {
-  if (diffMins < 0) return { suffix: " ago", prefix: "" };
-  if (diffMins > 0) return { suffix: "", prefix: "in " };
-  return { suffix: "", prefix: "" };
+const formatRelative = (diffMins: number, time: string, locale: Locale): string => {
+  if (diffMins < 0) return translate(locale, "{time} ago", { time });
+  return translate(locale, "in {time}", { time });
 };
 
-export const formatTimeUntil = (date: Date): string => {
+export const formatTimeUntil = (date: Date, locale: Locale = "en"): string => {
   const now = new Date();
   const diffMs = date.getTime() - now.getTime();
   const diffMins = Math.round(diffMs / (1000 * 60));
 
-  if (diffMins === 0) return "now";
+  if (diffMins === 0) return translate(locale, "now");
 
   const absMins = Math.abs(diffMins);
-  const { suffix, prefix } = getSuffixAndPrefix(diffMins);
 
-  if (absMins < MINS_PER_HOUR) return `${prefix}${absMins}m${suffix}`;
+  if (absMins < MINS_PER_HOUR) return formatRelative(diffMins, `${absMins}m`, locale);
 
   const hours = Math.floor(absMins / MINS_PER_HOUR);
-  if (hours < 48) return `${prefix}${hours}h${suffix}`;
+  if (hours < 48) return formatRelative(diffMins, `${hours}h`, locale);
 
   const days = Math.floor(absMins / MINS_PER_DAY);
-  return `${prefix}${days}d${suffix}`;
+  return formatRelative(diffMins, `${days}d`, locale);
 };
 
 export const isEventPast = (endTime: Date, nowMs = Date.now()): boolean =>
@@ -56,21 +54,23 @@ export const formatTimeRange = (start: Date, end: Date): string => {
   return `${startLabel} – ${formatTime(end)}`;
 };
 
-export const formatDate = (date: string | Date): string =>
-  new Date(date).toLocaleDateString(undefined, {
+export const formatDate = (date: string | Date, locale: Locale = "en"): string =>
+  new Date(date).toLocaleDateString(intlLocale(locale), {
     month: "long",
     day: "numeric",
     year: "numeric",
   });
 
-export const formatDateShort = (date: string | Date): string =>
-  new Date(date).toLocaleDateString("en-US", {
+export const formatDateShort = (date: string | Date, locale: Locale = "en"): string =>
+  new Date(date).toLocaleDateString(intlLocale(locale), {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
 
-export const formatDayHeader = (date: Date): string => {
+const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
+
+export const formatDayHeader = (date: Date, locale: Locale = "en"): string => {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -78,13 +78,15 @@ export const formatDayHeader = (date: Date): string => {
     (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Tomorrow";
-  if (diffDays === -1) return "Yesterday";
+  if (diffDays === 0) return translate(locale, "Today");
+  if (diffDays === 1) return translate(locale, "Tomorrow");
+  if (diffDays === -1) return translate(locale, "Yesterday");
 
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
+  return capitalize(
+    date.toLocaleDateString(intlLocale(locale), {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    }),
+  );
 };

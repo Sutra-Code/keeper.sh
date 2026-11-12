@@ -20,6 +20,7 @@ import { showToastAtom } from "@/state/toast";
 import { getCalendarProvider } from "@/utils/calendars";
 import { resolveErrorMessage } from "@/utils/errors";
 import type { CalendarSource } from "@/types/api";
+import { msg, useT } from "@/i18n";
 import type { SyncProposal } from "../sync-proposal";
 import { describeProposal } from "../sync-pairs";
 import { planSyncStart, startSync } from "../start-sync";
@@ -32,6 +33,7 @@ interface ReadyStepProps {
 
 export function ReadyStep({ proposal }: ReadyStepProps) {
   const { origin, destination } = proposal;
+  const t = useT();
   const store = useStore();
   const setRun = useSetAtom(onboardingRunAtom);
   const showToast = useSetAtom(showToastAtom);
@@ -65,7 +67,7 @@ export function ReadyStep({ proposal }: ReadyStepProps) {
       try {
         await startSync(plan);
       } catch (startError) {
-        setError(resolveErrorMessage(startError, "Syncing couldn't start. Try again."));
+        setError(resolveErrorMessage(startError, msg("Syncing couldn't start. Try again.")));
         return;
       }
       track(ANALYTICS_EVENTS.onboarding_sync_started, {
@@ -73,21 +75,23 @@ export function ReadyStep({ proposal }: ReadyStepProps) {
         mapping_count: plan.mappings.length,
       });
       setRun({ phase: "started", startedAfterSeq });
-      showToast("Sync started");
+      showToast(t("Sync started"));
       await Promise.all([mutate(USAGE_CACHE_KEY), mutate("/api/mappings")]);
     });
   };
 
   return (
     <>
-      <OnboardingHeading title="Ready to sync" description={describeProposal(proposal)} />
+      <OnboardingHeading title={t("Ready to sync")} description={describeProposal(proposal, t)} />
       <NavigationMenu>
         {proposal.forward && (
           <NavigationMenuToggleItem checked={choice.forward} onCheckedChange={(enabled) => edit("forward", enabled)}>
             <NavigationMenuItemIcon>
               <ProviderIcon provider={getCalendarProvider(origin)} calendarType={origin.calendarType} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>Copy {origin.name} to {destination.name}</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>
+              {t("Copy {source} to {destination}", { destination: destination.name, source: origin.name })}
+            </NavigationMenuItemLabel>
           </NavigationMenuToggleItem>
         )}
         {proposal.backward && (
@@ -95,14 +99,16 @@ export function ReadyStep({ proposal }: ReadyStepProps) {
             <NavigationMenuItemIcon>
               <ProviderIcon provider={getCalendarProvider(destination)} calendarType={destination.calendarType} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>Copy {destination.name} to {origin.name}</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>
+              {t("Copy {source} to {destination}", { destination: origin.name, source: destination.name })}
+            </NavigationMenuItemLabel>
           </NavigationMenuToggleItem>
         )}
         <NavigationMenuToggleItem checked={choice.busyOnly} onCheckedChange={(enabled) => edit("busyOnly", enabled)}>
           <NavigationMenuItemIcon>
             <EyeOff size={15} />
           </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Busy only</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("Busy only")}</NavigationMenuItemLabel>
         </NavigationMenuToggleItem>
       </NavigationMenu>
       <Button
@@ -111,15 +117,15 @@ export function ReadyStep({ proposal }: ReadyStepProps) {
         onClick={start}
       >
         {isStarting && <LoaderCircle size={16} className="animate-spin" />}
-        <ButtonText>Start syncing</ButtonText>
+        <ButtonText>{t("Start syncing")}</ButtonText>
       </Button>
-      {error && <Text size="sm" tone="danger" align="center">{error}</Text>}
+      {error && <Text size="sm" tone="danger" align="center">{t(error)}</Text>}
       <LinkButton
         to={`/dashboard/accounts/${origin.accountId}/${origin.id}`}
         variant="ghost"
         className="w-full justify-center"
       >
-        <ButtonText>Choose other calendars</ButtonText>
+        <ButtonText>{t("Choose other calendars")}</ButtonText>
       </LinkButton>
     </>
   );

@@ -1,5 +1,6 @@
 import { getEnabledSocialProviders } from "./auth-capabilities";
 import type { AuthCapabilities, SocialProviderId } from "./auth-capabilities";
+import { msg } from "@/i18n";
 
 type AccountDeletionOutcome = "deleted" | "reauthentication-required";
 
@@ -36,7 +37,7 @@ const resolveAccountDeletionOutcome = (error: AuthErrorLike | null): AccountDele
   if (error.code === SESSION_EXPIRED_CODE) {
     return "reauthentication-required";
   }
-  throw new Error(error.message ?? "Failed to delete account.");
+  throw new Error(error.message ?? msg("Failed to delete account."));
 };
 
 const resolveReauthenticationMethods = ({
@@ -61,12 +62,12 @@ const isPasskeyCancellation = (code: string | undefined): boolean =>
 
 const resolveReauthenticationErrorMessage = (error: AuthErrorLike): string => {
   if (error.code === PASSKEY_BELONGS_TO_ANOTHER_ACCOUNT_CODE) {
-    return "That passkey belongs to a different account.";
+    return msg("That passkey belongs to a different account.");
   }
   if (isPasskeyCancellation(error.code)) {
-    return "Passkey cancelled.";
+    return msg("Passkey cancelled.");
   }
-  return "Couldn't confirm it's you.";
+  return msg("Couldn't confirm it's you.");
 };
 
 interface DeleteAccountDescriptionInput {
@@ -79,12 +80,12 @@ const resolveDeleteAccountDescription = ({
   step,
 }: DeleteAccountDescriptionInput): string => {
   if (step === "confirm") {
-    return "This action is permanent and cannot be undone. All of your data, calendars, and connected accounts will be permanently deleted.";
+    return msg("This action is permanent and cannot be undone. All of your data, calendars, and connected accounts will be permanently deleted.");
   }
   if (methodCount === 0) {
-    return "Sign out and back in, then delete your account.";
+    return msg("Sign out and back in, then delete your account.");
   }
-  return "Sign in again to confirm it's you, then delete your account.";
+  return msg("Sign in again to confirm it's you, then delete your account.");
 };
 
 const readsAsReauthenticationReturn = (search: Record<string, unknown>): boolean =>

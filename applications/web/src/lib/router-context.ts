@@ -1,3 +1,4 @@
+import type { Locale } from "@/i18n/locale";
 import type { PublicRuntimeConfig } from "./runtime-config";
 
 export interface AppAuthContext {
@@ -23,6 +24,7 @@ export interface AppRouterContext {
   auth: AppAuthContext;
   fetchApi: AppJsonFetcher;
   fetchWeb: AppJsonFetcher;
+  locale: Locale;
   runtimeConfig: PublicRuntimeConfig;
   viteAssets: ViteAssets | null;
 }

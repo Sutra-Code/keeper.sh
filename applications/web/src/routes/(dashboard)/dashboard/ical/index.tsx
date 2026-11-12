@@ -32,12 +32,15 @@ import { fetcher } from "@/lib/fetcher";
 import { pluralize } from "@/lib/pluralize";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { resolveErrorMessage } from "@/utils/errors";
+import { msg, useLocale, useT } from "@/i18n";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/ical/")({
   component: ICalFeedsPage,
 });
 
 function ICalFeedsPage() {
+  const t = useT();
+  const locale = useLocale();
   const { data: entitlements } = useEntitlements();
   const { revalidateEntitlements } = useMutateEntitlements();
   const { data: feeds, isLoading, error, mutate } = useIcalFeeds();
@@ -55,10 +58,10 @@ function ICalFeedsPage() {
     <div className="flex flex-col gap-1.5">
       <BackButton />
       <DashboardSection
-        title="iCal Feeds"
-        description="Each feed is a link you can subscribe to in any calendar app, with its own calendars and privacy settings."
+        title={t("iCal Feeds")}
+        description={t("Each feed is a link you can subscribe to in any calendar app, with its own calendars and privacy settings.")}
       />
-      {mutationError && <Text size="sm" tone="danger">{mutationError}</Text>}
+      {mutationError && <Text size="sm" tone="danger">{t(mutationError)}</Text>}
       <NavigationMenu>
         {feeds.map((feed) => (
           <NavigationMenuLinkItem
@@ -75,7 +78,7 @@ function ICalFeedsPage() {
             <NavigationMenuItemLabel>{feed.name}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing>
               <Text size="sm" tone="muted">
-                {pluralize(feed.calendarCount ?? 0, "calendar")}
+                {pluralize(feed.calendarCount ?? 0, t("calendar"), t("calendars"), locale)}
               </Text>
             </NavigationMenuItemTrailing>
           </NavigationMenuLinkItem>
@@ -91,23 +94,24 @@ function ICalFeedsPage() {
           onError={setMutationError}
         />
       </NavigationMenu>
-      {!canCreate && <PremiumHint>Free plans include one iCal feed.</PremiumHint>}
+      {!canCreate && <PremiumHint>{t("Free plans include one iCal feed.")}</PremiumHint>}
     </div>
   );
 }
 
 function CreateSubmitButton({ isCreating }: { isCreating: boolean }) {
+  const t = useT();
   if (isCreating) {
     return (
       <Button type="submit" className="w-full justify-center" disabled>
-        <ButtonText>Creating...</ButtonText>
+        <ButtonText>{t("Creating...")}</ButtonText>
       </Button>
     );
   }
 
   return (
     <Button type="submit" className="w-full justify-center">
-      <ButtonText>Create</ButtonText>
+      <ButtonText>{t("Create")}</ButtonText>
     </Button>
   );
 }
@@ -125,6 +129,7 @@ function CreateFeedItem({
   onCreated: () => Promise<void>;
   onError: (error: string | null) => void;
 }) {
+  const t = useT();
   const nameRef = useRef<HTMLInputElement>(null);
   const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
@@ -142,7 +147,7 @@ function CreateFeedItem({
       await onCreated();
       await navigate({ to: "/dashboard/ical/$feedId", params: { feedId: created.id } });
     } catch (err) {
-      onError(resolveErrorMessage(err, "Failed to create feed."));
+      onError(resolveErrorMessage(err, msg("Failed to create feed.")));
       setCreateOpen(false);
       await onCreated();
     } finally {
@@ -156,16 +161,16 @@ function CreateFeedItem({
         <NavigationMenuItemIcon>
           <Plus size={15} />
         </NavigationMenuItemIcon>
-        <NavigationMenuItemLabel>Create Feed</NavigationMenuItemLabel>
+        <NavigationMenuItemLabel>{t("Create Feed")}</NavigationMenuItemLabel>
       </NavigationMenuButtonItem>
       <Modal open={createOpen} onOpenChange={setCreateOpen}>
         <ModalContent>
           <form onSubmit={handleSubmit} className="contents">
-            <ModalTitle>Create iCal feed</ModalTitle>
+            <ModalTitle>{t("Create iCal feed")}</ModalTitle>
             <ModalDescription>
-              Give your feed a name to help you remember what it is for.
+              {t("Give your feed a name to help you remember what it is for.")}
             </ModalDescription>
-            <Input ref={nameRef} name="name" placeholder="Feed name" autoFocus />
+            <Input ref={nameRef} name="name" placeholder={t("Feed name")} autoFocus />
             <ModalFooter>
               <CreateSubmitButton isCreating={isCreating} />
               <Button
@@ -174,7 +179,7 @@ function CreateFeedItem({
                 className="w-full justify-center"
                 onClick={() => setCreateOpen(false)}
               >
-                <ButtonText>Cancel</ButtonText>
+                <ButtonText>{t("Cancel")}</ButtonText>
               </Button>
             </ModalFooter>
           </form>

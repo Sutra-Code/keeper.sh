@@ -3,6 +3,8 @@ import { getMcpAuthorizationSearch } from "@/lib/mcp-auth-flow";
 import { resolveAuthRedirect } from "@/lib/route-access-guards";
 import SutraMark from "@/assets/sutra-mark.svg?react";
 import { SutraWordmark } from "@/components/ui/primitives/sutra-wordmark";
+import { LanguageSwitcher } from "@/i18n/language-switcher";
+import { useT } from "@/i18n";
 
 export const Route = createFileRoute("/(auth)")({
   beforeLoad: ({ context, search }) => {
@@ -22,6 +24,8 @@ export const Route = createFileRoute("/(auth)")({
 });
 
 function AuthLayout() {
+  const t = useT();
+
   return (
     <main className="grid min-h-dvh place-items-center bg-canvas p-3 sm:p-6">
       <div className="grid w-full max-w-4xl overflow-hidden rounded-[2rem] bg-background p-2 md:grid-cols-2">
@@ -32,12 +36,12 @@ function AuthLayout() {
           <SutraMark className="size-10 text-foreground" />
           <div>
             <p className="font-display text-3xl font-medium leading-tight tracking-tight text-foreground">
-              Every calendar,
+              {t("Every calendar,")}
               <br />
-              in one place.
+              {t("in one place.")}
             </p>
             <p className="mt-3 max-w-xs text-sm text-foreground-muted">
-              Keep your availability in sync across all of your calendars.
+              {t("Keep your availability in sync across all of your calendars.")}
             </p>
           </div>
         </section>
@@ -46,6 +50,7 @@ function AuthLayout() {
           <div className="flex w-full flex-col gap-2">
             <Outlet />
           </div>
+          <LanguageSwitcher className="mt-auto self-start pt-8" />
         </div>
       </div>
     </main>

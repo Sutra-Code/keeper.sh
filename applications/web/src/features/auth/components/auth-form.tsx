@@ -41,6 +41,7 @@ import {
   resolveClientPostAuthRedirect,
   type StringSearchParams,
 } from "@/lib/mcp-auth-flow";
+import { msg, useT } from "@/i18n";
 import { AuthSwitchPrompt } from "./auth-switch-prompt";
 
 function resolveInputTone(active: boolean | undefined): "error" | "neutral" {
@@ -108,6 +109,7 @@ export function AuthForm({
   const switchSearch = resolveSwitchSearch(authorizationSearch);
   const switchHref = copy.switchTo && resolvePathWithSearch(copy.switchTo, switchSearch);
   const hideCredentialForm = capabilities.disableLocalAuth === true;
+  const t = useT();
 
   return (
     <>
@@ -115,8 +117,8 @@ export function AuthForm({
         <PasskeyAutoFill authorizationSearch={authorizationSearch} />
       )}
       <div className="flex flex-col py-2">
-        <Heading2 as="span">{copy.heading}</Heading2>
-        <Text size="sm" tone="muted" align="left">{copy.subtitle}</Text>
+        <Heading2 as="span">{t(copy.heading)}</Heading2>
+        <Text size="sm" tone="muted" align="left">{t(copy.subtitle)}</Text>
       </div>
       {hasSocialProviders && (
         <>
@@ -125,7 +127,7 @@ export function AuthForm({
             oauthActionLabel={copy.oauthActionLabel}
             authorizationSearch={authorizationSearch}
           />
-          {!hideCredentialForm && <Divider>or</Divider>}
+          {!hideCredentialForm && <Divider>{t("or")}</Divider>}
         </>
       )}
       {!hideCredentialForm && (
@@ -140,9 +142,9 @@ export function AuthForm({
         <AuthError />
         {!hideCredentialForm && switchHref && (
           <AuthSwitchPrompt>
-            {copy.switchPrompt}{" "}
+            {copy.switchPrompt && t(copy.switchPrompt)}{" "}
             <ExternalTextLink href={switchHref}>
-              {copy.switchCta}
+              {copy.switchCta && t(copy.switchCta)}
             </ExternalTextLink>
           </AuthSwitchPrompt>
         )}
@@ -184,7 +186,7 @@ function usePasskeyAutoFill(authorizationSearch?: StringSearchParams) {
         if ("code" in error && error.code === "AUTH_CANCELLED") {
           return;
         }
-        setError({ message: error.message ?? "Passkey sign-in failed.", active: true });
+        setError({ message: error.message ?? msg("Passkey sign-in failed."), active: true });
         return;
       }
 
@@ -264,6 +266,7 @@ function SocialSignInButton({
   const status = useAtomValue(authFormStatusAtom);
   const setStatus = useSetAtom(authFormStatusAtom);
   const setError = useSetAtom(authFormErrorAtom);
+  const t = useT();
 
   const showError = (message: string) => {
     setStatus("idle");
@@ -275,7 +278,7 @@ function SocialSignInButton({
     setStatus("loading");
 
     const callbackURL = resolveClientPostAuthRedirect(authorizationSearch);
-    const fallbackMessage = `Couldn't reach ${providerName}.`;
+    const fallbackMessage = t("Couldn't reach {provider}.", { provider: providerName });
 
     try {
       const { error } = await authClient.signIn.social({
@@ -305,7 +308,7 @@ function SocialSignInButton({
           <img src={iconSrc} alt="" width={16} height={16} />
         </ButtonIcon>
       )}
-      <ButtonText>{`${actionLabel} with ${providerName}`}</ButtonText>
+      <ButtonText>{t("{action} with {provider}", { action: t(actionLabel), provider: providerName })}</ButtonText>
     </Button>
   );
 }
@@ -322,10 +325,11 @@ function ForgotPasswordLink({
   action: "signIn" | "signUp";
   capabilities: AuthCapabilities;
 }) {
+  const t = useT();
   if (action !== "signIn" || !capabilities.supportsPasswordReset) return null;
   return (
     <div className="flex justify-end">
-      <TextLink to="/forgot-password" size="xs">Forgot password?</TextLink>
+      <TextLink to="/forgot-password" size="xs">{t("Forgot password?")}</TextLink>
     </div>
   );
 }
@@ -367,6 +371,7 @@ function CredentialForm({
   const setError = useSetAtom(authFormErrorAtom);
   const passwordRef = useRef<HTMLInputElement>(null);
   const credentialField = resolveCredentialField(capabilities);
+  const t = useT();
 
   useEffect(() => {
     if (typeof sessionStorage === "undefined") {
@@ -404,7 +409,7 @@ function CredentialForm({
     } catch (error) {
       setStatus("idle");
       setError({
-        message: resolveErrorMessage(error, "Something went wrong. Please try again."),
+        message: resolveErrorMessage(error, msg("Something went wrong. Please try again.")),
         active: true,
       });
       return;
@@ -440,7 +445,7 @@ function CredentialForm({
           name={credentialField.name}
           readOnly={step === "password"}
           autoComplete={resolveAutoComplete(action, credentialField.autoComplete, capabilities)}
-          label={credentialField.label}
+          label={t(credentialField.label)}
           placeholder={credentialField.placeholder}
           type={credentialField.type}
         />
@@ -463,7 +468,7 @@ function CredentialForm({
       </div>
       <div className="flex items-stretch">
         <FormBackButton step={step} onBack={handleBack} />
-        <SubmitButton>{submitLabel}</SubmitButton>
+        <SubmitButton>{t(submitLabel)}</SubmitButton>
       </div>
       <ForgotPasswordLink action={action} capabilities={capabilities} />
     </form>
@@ -478,6 +483,7 @@ function resolveAuthErrorAnimation(active: boolean | undefined): TargetAndTransi
 function AuthError() {
   const error = useAtomValue(authFormErrorAtom);
   const active = error?.active;
+  const t = useT();
 
   return (
     <LazyMotion features={loadMotionFeatures}>
@@ -488,7 +494,7 @@ function AuthError() {
         transition={{ duration: 0.2 }}
       >
         <p className="text-sm tracking-tight text-destructive text-center">
-          {error?.message}
+          {error?.message && t(error.message)}
         </p>
       </m.div>
     </LazyMotion>
@@ -554,6 +560,7 @@ function PasswordInput({
   const status = useAtomValue(authFormStatusAtom);
   const error = useAtomValue(authFormErrorAtom);
   const setError = useSetAtom(authFormErrorAtom);
+  const t = useT();
 
   const clearError = () => {
     if (error?.active) setError({ ...error, active: false });
@@ -561,14 +568,14 @@ function PasswordInput({
 
   return (
     <>
-      <label htmlFor="current-password" className="sr-only">Password</label>
+      <label htmlFor="current-password" className="sr-only">{t("Password")}</label>
       <Input
         ref={ref}
         id="current-password"
         name="password"
         disabled={status === "loading"}
         type="password"
-        placeholder="Password"
+        placeholder={t("Password")}
         autoComplete={autoComplete}
         tabIndex={tabIndex}
         tone={resolveInputTone(error?.active)}

@@ -6,6 +6,7 @@ import { fetchAuthCapabilitiesWithApi } from "@/lib/auth-capabilities";
 import { Button, ButtonText } from "@/components/ui/primitives/button";
 import { Heading2 } from "@/components/ui/primitives/heading";
 import { Text } from "@/components/ui/primitives/text";
+import { msg, useT } from "@/i18n";
 
 export const Route = createFileRoute("/(auth)/verify-email")({
   loader: async ({ context }) => {
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/(auth)/verify-email")({
 function VerifyEmailPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   const [email] = useState(() => {
     const stored = sessionStorage.getItem("pendingVerificationEmail");
@@ -45,7 +47,7 @@ function VerifyEmailPage() {
     });
 
     if (error) {
-      setError(error.message ?? "Failed to resend verification email");
+      setError(error.message ?? msg("Failed to resend verification email"));
       setStatus("idle");
       return;
     }
@@ -60,17 +62,17 @@ function VerifyEmailPage() {
           <Mail size={24} className="text-foreground-muted" />
         </div>
         <div className="flex flex-col">
-          <Heading2 as="span" className="text-center">Check your email</Heading2>
+          <Heading2 as="span" className="text-center">{t("Check your email")}</Heading2>
           <Text size="sm" tone="muted" align="center">
-            We sent a verification link to your email. Click the link to verify your account. Please check your spam or junk folder if you don't see it in your inbox.
+            {t("We sent a verification link to your email. Click the link to verify your account. Please check your spam or junk folder if you don't see it in your inbox.")}
           </Text>
         </div>
       </div>
       {error && (
-        <Text size="sm" tone="danger" align="center">{error}</Text>
+        <Text size="sm" tone="danger" align="center">{t(error)}</Text>
       )}
       {status === "sent" && (
-        <Text size="sm" tone="muted" align="center">Verification email sent.</Text>
+        <Text size="sm" tone="muted" align="center">{t("Verification email sent.")}</Text>
       )}
       <Button
         variant="border"
@@ -78,7 +80,7 @@ function VerifyEmailPage() {
         onClick={handleResend}
         disabled={!email || status === "loading"}
       >
-        <ButtonText>Resend verification email</ButtonText>
+        <ButtonText>{t("Resend verification email")}</ButtonText>
       </Button>
     </>
   );

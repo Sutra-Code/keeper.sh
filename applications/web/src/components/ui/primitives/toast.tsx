@@ -7,6 +7,7 @@ import { loadMotionFeatures } from "@/lib/motion-features";
 import { dismissToastAtom, toastAtom } from "@/state/toast";
 import type { Toast } from "@/state/toast";
 import { Text } from "./text";
+import { useT } from "@/i18n";
 
 const TOAST_DURATION_MS = 3000;
 const TOAST_HIDDEN = { opacity: 0, y: -8, filter: "blur(4px)" };
@@ -31,6 +32,7 @@ export function Toaster() {
 
 function ToastMessage({ toast }: { toast: Toast }) {
   const dismiss = useSetAtom(dismissToastAtom);
+  const t = useT();
 
   useEffect(() => {
     const timeout = setTimeout(() => dismiss(toast.id), TOAST_DURATION_MS);
@@ -45,7 +47,7 @@ function ToastMessage({ toast }: { toast: Toast }) {
       exit={TOAST_HIDDEN}
       transition={{ duration: 0.2 }}
     >
-      <Text as="span" size="sm" tone="inverse">{toast.message}</Text>
+      <Text as="span" size="sm" tone="inverse">{t(toast.message)}</Text>
     </m.div>
   );
 }

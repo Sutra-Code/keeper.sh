@@ -1,3 +1,5 @@
+import { intlLocale, type Locale } from "@/i18n";
+
 /** 0 = Sunday, as `Date#getDay`. */
 export const WEEK_STARTS_ON = 0;
 
@@ -56,22 +58,53 @@ export function getMonthGridDays(anchor: Date): Date[] {
   });
 }
 
-export const WEEKDAY_LABELS = Array.from({ length: 7 }, (_, index) => {
-  // 2023-01-01 is a Sunday, so it anchors the label sequence.
-  const day = new Date(2023, 0, 1 + WEEK_STARTS_ON + index);
-  return day.toLocaleDateString("en-US", { weekday: "short" });
-});
-
-export function formatMonthTitle(anchor: Date): string {
-  return anchor.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+/** Sentence-cases a formatted date: Spanish names come back lower-case ("lun", "noviembre"). */
+export function capitalizeFirst(text: string, locale: Locale): string {
+  return text.charAt(0).toLocaleUpperCase(intlLocale(locale)) + text.slice(1);
 }
 
-// Composed by hand: Intl has no day+year-without-month format ("Aug 19 – 25, 2026").
-export function formatWeekTitle(anchor: Date): string {
+// Some ICU versions abbreviate with a trailing period ("lun.", "ago."); dropped so server and browser agree.
+const formatShortName = (
+  date: Date,
+  locale: Locale,
+  options: Intl.DateTimeFormatOptions,
+): string => date.toLocaleDateString(intlLocale(locale), options).replace(".", "");
+
+export function formatWeekdayShort(day: Date, locale: Locale): string {
+  return capitalizeFirst(formatShortName(day, locale, { weekday: "short" }), locale);
+}
+
+export function getWeekdayLabels(locale: Locale): string[] {
+  return Array.from({ length: 7 }, (_, index) => {
+    // 2023-01-01 is a Sunday, so it anchors the label sequence.
+    const day = new Date(2023, 0, 1 + WEEK_STARTS_ON + index);
+    return formatWeekdayShort(day, locale);
+  });
+}
+
+export function formatMonthTitle(anchor: Date, locale: Locale): string {
+  return capitalizeFirst(
+    anchor.toLocaleDateString(intlLocale(locale), { month: "long", year: "numeric" }),
+    locale,
+  );
+}
+
+// Composed by hand: Intl has no day+year-without-month format ("Aug 19 – 25, 2026", "19 – 25 ago 2026").
+export function formatWeekTitle(anchor: Date, locale: Locale): string {
   const start = startOfVisibleWeek(anchor);
   const end = addDays(start, WEEK_VIEW_DAYS - 1);
-  const startMonth = start.toLocaleDateString("en-US", { month: "short" });
-  const endMonth = end.toLocaleDateString("en-US", { month: "short" });
+  const startMonth = formatShortName(start, locale, { month: "short" });
+  const endMonth = formatShortName(end, locale, { month: "short" });
+
+  if (locale === "es") {
+    if (isSameMonth(start, end)) {
+      return `${start.getDate()} – ${end.getDate()} ${endMonth} ${end.getFullYear()}`;
+    }
+    if (start.getFullYear() === end.getFullYear()) {
+      return `${start.getDate()} ${startMonth} – ${end.getDate()} ${endMonth} ${end.getFullYear()}`;
+    }
+    return `${start.getDate()} ${startMonth} ${start.getFullYear()} – ${end.getDate()} ${endMonth} ${end.getFullYear()}`;
+  }
 
   if (isSameMonth(start, end)) {
     return `${startMonth} ${start.getDate()} – ${end.getDate()}, ${end.getFullYear()}`;
@@ -101,9 +134,12 @@ export const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
 export const HOUR_HEIGHT = 48;
 
-export function formatHourLabel(hour: number): string {
-  return new Date(2023, 0, 1, hour)
-    .toLocaleTimeString("en-US", { hour: "numeric" })
-    .replace(" ", "")
-    .toLowerCase();
+// Twelve-hour in every language, like the event times; the day period is squeezed to "am"/"pm" to fit the gutter.
+export function formatHourLabel(hour: number, locale: Locale): string {
+  const parts = new Intl.DateTimeFormat(intlLocale(locale), { hour: "numeric", hour12: true })
+    .formatToParts(new Date(2023, 0, 1, hour));
+  const value = parts.find((part) => part.type === "hour")?.value ?? String(hour % 12 || 12);
+  const period = parts.find((part) => part.type === "dayPeriod")?.value ?? "";
+
+  return `${value}${period.replace(/[\s.]/g, "").toLowerCase()}`;
 }

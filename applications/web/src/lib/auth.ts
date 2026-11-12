@@ -6,6 +6,7 @@ import {
   resolveReauthenticationErrorMessage,
 } from "./account-reauthentication";
 import type { AccountDeletionOutcome, ReauthenticationMethod } from "./account-reauthentication";
+import { msg } from "@/i18n";
 
 async function authPost(url: string, body: Record<string, unknown> = {}): Promise<void> {
   const response = await fetch(url, {
@@ -16,7 +17,7 @@ async function authPost(url: string, body: Record<string, unknown> = {}): Promis
   });
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new Error(data.message ?? "Request failed");
+    throw new Error(data.message ?? msg("Request failed"));
   }
 }
 
@@ -34,7 +35,7 @@ async function authJsonPost(url: string, body: Record<string, unknown>): Promise
         ? data.message
         : typeof data === "object" && data !== null && "error" in data && typeof data.error === "string"
           ? data.error
-          : "Request failed";
+          : msg("Request failed");
     throw new Error(message);
   }
 }
@@ -53,7 +54,7 @@ export const signInWithCredential = async (
   }
 
   const { error } = await authClient.signIn.email({ email: credential, password });
-  if (error) throw new Error(error.message ?? "Sign in failed");
+  if (error) throw new Error(error.message ?? msg("Sign in failed"));
 };
 
 export const signUpWithCredential = async (
@@ -78,9 +79,9 @@ export const signUpWithCredential = async (
   });
   if (!error) return;
   if (error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
-    throw new Error("This email is already registered. Please sign in instead.");
+    throw new Error(msg("This email is already registered. Please sign in instead."));
   }
-  throw new Error(error.message ?? "Sign up failed");
+  throw new Error(error.message ?? msg("Sign up failed"));
 };
 
 export const signOut = () => authPost("/api/auth/sign-out");
@@ -90,12 +91,12 @@ export const forgotPassword = async (email: string): Promise<void> => {
     email,
     redirectTo: "/reset-password",
   });
-  if (error) throw new Error(error.message ?? "Failed to send reset email");
+  if (error) throw new Error(error.message ?? msg("Failed to send reset email"));
 };
 
 export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
   const { error } = await authClient.resetPassword({ newPassword, token });
-  if (error) throw new Error(error.message ?? "Failed to reset password");
+  if (error) throw new Error(error.message ?? msg("Failed to reset password"));
 };
 
 export const changePassword = (currentPassword: string, newPassword: string) =>

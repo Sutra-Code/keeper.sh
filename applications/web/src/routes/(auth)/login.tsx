@@ -5,6 +5,7 @@ import {
   getMcpAuthorizationSearch,
   toStringSearchParams,
 } from "@/lib/mcp-auth-flow";
+import { msg } from "@/i18n";
 
 export const Route = createFileRoute("/(auth)/login")({
   loader: ({ context }) => fetchAuthCapabilitiesWithApi(context.fetchApi),
@@ -13,10 +14,10 @@ export const Route = createFileRoute("/(auth)/login")({
 });
 
 const copy: AuthScreenCopy = {
-  heading: "Welcome back",
-  subtitle: "Sign in to your account",
-  oauthActionLabel: "Sign in",
-  submitLabel: "Sign in",
+  heading: msg("Welcome back"),
+  subtitle: msg("Sign in to your account"),
+  oauthActionLabel: msg("Sign in"),
+  submitLabel: msg("Sign in"),
   action: "signIn",
 };
 

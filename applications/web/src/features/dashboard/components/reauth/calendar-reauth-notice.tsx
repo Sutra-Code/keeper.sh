@@ -2,11 +2,12 @@ import { Link } from "@tanstack/react-router";
 import TriangleAlert from "lucide-react/dist/esm/icons/triangle-alert";
 import ArrowRight from "lucide-react/dist/esm/icons/arrow-right";
 import { Text } from "@/components/ui/primitives/text";
-import { pluralize } from "@/lib/pluralize";
+import { rich, useT } from "@/i18n";
 import { reauthHref, useReauthAccounts } from "./use-reauth-accounts";
 
 /** Sits between the calendar toolbar and the day row, as part of the frame's chrome. */
 export function CalendarReauthStrip() {
+  const t = useT();
   const accounts = useReauthAccounts();
   if (accounts.length === 0) return null;
 
@@ -17,14 +18,20 @@ export function CalendarReauthStrip() {
     >
       <TriangleAlert size={15} className="shrink-0 text-attention" />
       <Text size="sm" tone="muted" className="min-w-0 truncate">
-        <span className="font-medium text-foreground">
-          {pluralize(accounts.length, "calendar account")}
-        </span>{" "}
-        {accounts.length === 1 ? "needs" : "need"} your attention.
+        {rich(
+          accounts.length === 1
+            ? t("<strong>{count} calendar account</strong> needs your attention.", { count: accounts.length })
+            : t("<strong>{count} calendar accounts</strong> need your attention.", { count: accounts.length }),
+          {
+            strong: (chunk) => (
+              <span key="strong" className="font-medium text-foreground">{chunk}</span>
+            ),
+          },
+        )}
       </Text>
       <div className="flex grow items-center justify-end gap-1">
         <Text as="span" size="sm" tone="attention" className="hidden sm:block">
-          Reconnect
+          {t("Reconnect")}
         </Text>
         <ArrowRight size={15} className="shrink-0 text-attention" />
       </div>

@@ -14,6 +14,7 @@ import { resolveCalDAVImportNotice } from "@/lib/caldav-import-notice";
 import { showToastAtom } from "@/state/toast";
 import { HTTP_STATUS } from "@keeper.sh/constants";
 import { describeCalendarImportFailure } from "@/lib/connect-failures";
+import { msg, useLocale, useT } from "@/i18n";
 
 export type CalDAVProvider = "fastmail" | "icloud" | "caldav";
 
@@ -30,26 +31,26 @@ const PROVIDER_CONFIGS: Record<CalDAVProvider, ProviderConfig> = {
   fastmail: {
     serverUrl: "https://caldav.fastmail.com/",
     showServerUrlInput: false,
-    usernamePlaceholder: "Fastmail Email Address",
+    usernamePlaceholder: msg("Fastmail Email Address"),
     usernameInputType: "email",
-    passwordPlaceholder: "App-Specific Password",
-    credentialsFailure: "Fastmail needs an app password here, not your Fastmail password.",
+    passwordPlaceholder: msg("App-Specific Password"),
+    credentialsFailure: msg("Fastmail needs an app password here, not your Fastmail password."),
   },
   icloud: {
     serverUrl: "https://caldav.icloud.com/",
     showServerUrlInput: false,
     usernamePlaceholder: "Apple ID",
     usernameInputType: "email",
-    passwordPlaceholder: "App-Specific Password",
-    credentialsFailure: "Apple needs an app-specific password here, not your Apple password.",
+    passwordPlaceholder: msg("App-Specific Password"),
+    credentialsFailure: msg("Apple needs an app-specific password here, not your Apple password."),
   },
   caldav: {
     serverUrl: "",
     showServerUrlInput: true,
-    usernamePlaceholder: "CalDAV Server Username",
+    usernamePlaceholder: msg("CalDAV Server Username"),
     usernameInputType: "text",
-    passwordPlaceholder: "CalDAV Server Password",
-    credentialsFailure: "That username or password didn't work.",
+    passwordPlaceholder: msg("CalDAV Server Password"),
+    credentialsFailure: msg("That username or password didn't work."),
   },
 };
 
@@ -105,6 +106,8 @@ export function CalDAVConnectForm({ provider, credentialHelp, onCredentialsRejec
   const { mutate: globalMutate } = useSWRConfig();
   const showToast = useSetAtom(showToastAtom);
   const formRef = useRef<HTMLFormElement>(null);
+  const t = useT();
+  const locale = useLocale();
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +124,7 @@ export function CalDAVConnectForm({ provider, credentialHelp, onCredentialsRejec
     const password = readFormFieldValue(formData, "password");
 
     if (!serverUrl || !username || !password) {
-      setError("Missing required credentials");
+      setError(msg("Missing required credentials"));
       return;
     }
 
@@ -140,7 +143,7 @@ export function CalDAVConnectForm({ provider, credentialHelp, onCredentialsRejec
           onCredentialsRejected?.();
           return;
         }
-        setError("Couldn't find calendars on this server. Check the details and try again.");
+        setError(msg("Couldn't find calendars on this server. Check the details and try again."));
         return;
       }
 
@@ -148,12 +151,12 @@ export function CalDAVConnectForm({ provider, credentialHelp, onCredentialsRejec
       const calendars = parseCalendarOptions(discoverPayload);
       const authMethod = parseAuthMethod(discoverPayload);
       if (!calendars) {
-        setError("Failed to parse discovered calendars");
+        setError(msg("Failed to parse discovered calendars"));
         return;
       }
 
       if (calendars.length === 0) {
-        setError("No calendars found");
+        setError(msg("No calendars found"));
         return;
       }
 
@@ -180,6 +183,7 @@ export function CalDAVConnectForm({ provider, credentialHelp, onCredentialsRejec
         accountId = parseAccountId(importPayload);
         importNotice = resolveCalDAVImportNotice(
           isRecord(importPayload) ? importPayload.calendars : undefined,
+          locale,
         );
       } catch (err) {
         setError(describeCalendarImportFailure(err));
@@ -189,7 +193,7 @@ export function CalDAVConnectForm({ provider, credentialHelp, onCredentialsRejec
       await invalidateAccountsAndSources(globalMutate);
 
       if (importNotice) {
-        showToast(importNotice);
+        showToast(t(importNotice));
       }
 
       if (accountId) {
@@ -208,7 +212,7 @@ export function CalDAVConnectForm({ provider, credentialHelp, onCredentialsRejec
             name="serverUrl"
             defaultValue={config.serverUrl}
             type="url"
-            placeholder="CalDAV Server URL"
+            placeholder={t("CalDAV Server URL")}
             required
           />
         ) : (
@@ -217,26 +221,26 @@ export function CalDAVConnectForm({ provider, credentialHelp, onCredentialsRejec
         <Input
           name="username"
           type={config.usernameInputType}
-          placeholder={config.usernamePlaceholder}
+          placeholder={t(config.usernamePlaceholder)}
           required
         />
         <Input
           name="password"
           type="password"
-          placeholder={config.passwordPlaceholder}
+          placeholder={t(config.passwordPlaceholder)}
           required
           tone={credentialsRejected ? "error" : "neutral"}
           aria-invalid={credentialsRejected}
         />
       </div>
-      {error && <Text size="sm" tone="danger">{error}</Text>}
+      {error && <Text size="sm" tone="danger">{t(error)}</Text>}
       {credentialsRejected && credentialHelp}
       <Divider />
       <div className="flex items-stretch gap-2">
         <BackButton variant="border" size="standard" className="self-stretch justify-center px-3.5" />
         <Button type="submit" className="grow justify-center" disabled={isPending}>
           {isPending && <LoaderCircle size={16} className="animate-spin" />}
-          <ButtonText>{isPending ? "Connecting..." : "Connect"}</ButtonText>
+          <ButtonText>{isPending ? t("Connecting...") : t("Connect")}</ButtonText>
         </Button>
       </div>
     </form>

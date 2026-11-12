@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/fetcher";
+import { msg } from "@/i18n";
 
 interface CheckoutCallbacks {
   onSuccess?: () => void;
@@ -40,7 +41,7 @@ export async function openCheckout(productId: string, callbacks?: CheckoutCallba
   ]);
 
   if (!response.url) {
-    throw new Error("Failed to create checkout session");
+    throw new Error(msg("Failed to create checkout session"));
   }
 
   const checkout = await PolarEmbedCheckout.create(response.url, { theme: "light" });
@@ -53,7 +54,7 @@ export async function openCheckout(productId: string, callbacks?: CheckoutCallba
 export async function openCustomerPortal(): Promise<void> {
   const response = await createPortalSession();
   if (!response.url) {
-    throw new Error("Failed to open customer portal");
+    throw new Error(msg("Failed to open customer portal"));
   }
   globalThis.location.href = response.url;
 }

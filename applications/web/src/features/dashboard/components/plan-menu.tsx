@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/composites/navigation-menu/navigation-menu-items";
 import { useSubscription, type SubscriptionState } from "@/hooks/use-subscription";
 import { openCustomerPortal } from "@/utils/checkout";
+import { useT } from "@/i18n";
 
 interface PlanMenuItemProps {
   subscription: SubscriptionState | undefined;
@@ -17,6 +18,7 @@ interface PlanMenuItemProps {
 }
 
 export function PlanMenuItem({ subscription, subscriptionLoading }: PlanMenuItemProps) {
+  const t = useT();
   const navigate = useNavigate();
   const isPro = subscription?.plan === "pro";
   const [isManaging, setIsManaging] = useState(false);
@@ -39,7 +41,7 @@ export function PlanMenuItem({ subscription, subscriptionLoading }: PlanMenuItem
       <NavigationMenuItemIcon>
         {isPro ? <CreditCard size={15} /> : <Sparkles size={15} />}
       </NavigationMenuItemIcon>
-      <NavigationMenuItemLabel>{isPro ? "Manage Plan" : "Upgrade to Pro"}</NavigationMenuItemLabel>
+      <NavigationMenuItemLabel>{isPro ? t("Manage Plan") : t("Upgrade to Pro")}</NavigationMenuItemLabel>
       <NavigationMenuItemTrailing />
     </NavigationMenuButtonItem>
   );

@@ -15,6 +15,7 @@ import { resolveEventLocalEnd } from "@/lib/event-day";
 import { groupEventsByDay } from "@/features/dashboard/components/event-day-groups";
 import { EventCard } from "@/features/dashboard/components/event-card";
 import { useEvents, type CalendarEvent } from "@/hooks/use-events";
+import { useLocale, useT } from "@/i18n";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/events/")({
   component: EventsPage,
@@ -70,18 +71,21 @@ function EventsPage() {
 }
 
 function EventsHeader() {
+  const t = useT();
   return (
     <StickyPageHeader className="gap-3">
       <BackButton />
       <div className="flex flex-col">
-        <DashboardHeading1>Events</DashboardHeading1>
-        <Text size="sm">View all of the events across all of your calendars.</Text>
+        <DashboardHeading1>{t("Events")}</DashboardHeading1>
+        <Text size="sm">{t("View all of the events across all of your calendars.")}</Text>
       </div>
     </StickyPageHeader>
   );
 }
 
 function EventsContent() {
+  const t = useT();
+  const locale = useLocale();
   const { events, error, isLoading, isValidating, hasMore, loadMore } = useEvents();
   const reduceMotion = useReducedMotion() ?? false;
   // Cards already on screen when the page mounts (cached data) stay put; ids seen for the first time rise in.
@@ -94,10 +98,10 @@ function EventsContent() {
     setSeen({ previous: seen.current, current: new Set([...seen.current, ...unseen.map((event) => event.id)]) });
   }
   const newOrders = reduceMotion ? NO_NEW_CARDS : resolveNewOrders(events, seen.previous);
-  const dayGroups = groupEventsByDay(events);
+  const dayGroups = groupEventsByDay(events, locale);
 
   if (isLoading) return <LoadingIndicator />;
-  if (error) return <ErrorState message="Failed to load events." />;
+  if (error) return <ErrorState message={t("Failed to load events.")} />;
 
   return (
     <div className="flex flex-col gap-2">
@@ -155,9 +159,10 @@ function LoadingIndicator() {
 }
 
 const DaySection = memo(function DaySection({ label, events, newOrders }: DaySectionProps) {
+  const t = useT();
   return (
     <div className="flex flex-col px-0.5">
-      <DashboardHeading2>{label}</DashboardHeading2>
+      <DashboardHeading2>{t(label)}</DashboardHeading2>
       <div className="flex flex-col gap-2 pt-1">
         {events.map((event) => {
           const order = newOrders.get(event.id);

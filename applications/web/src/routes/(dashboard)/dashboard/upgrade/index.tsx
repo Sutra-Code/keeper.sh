@@ -26,6 +26,7 @@ import { resolveUpgradeRedirect } from "@/lib/route-access-guards";
 import { resolveUpgradeMode } from "@/lib/upgrade-mode";
 import type { UpgradeMode } from "@/lib/upgrade-mode";
 import type { PublicRuntimeConfig } from "@/lib/runtime-config";
+import { useT } from "@/i18n";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/upgrade/")({
   beforeLoad: ({ context }) => {
@@ -73,6 +74,7 @@ function resolveProPlan(runtimeConfig: PublicRuntimeConfig): PlanConfig {
 }
 
 function UpgradePage() {
+  const t = useT();
   const { runtimeConfig } = Route.useRouteContext();
   const proPlan = resolveProPlan(runtimeConfig);
   const { subscription: loaderSubscription } = Route.useLoaderData();
@@ -89,7 +91,7 @@ function UpgradePage() {
   const [isPending, startTransition] = useTransition();
 
   const price = yearly ? (proPlan.yearlyPrice / 12).toFixed(2) : proPlan.monthlyPrice.toFixed(2);
-  const period = yearly ? "per month, billed annually" : "per month";
+  const period = yearly ? t("per month, billed annually") : t("per month");
   const productId = yearly ? proPlan.yearlyProductId : proPlan.monthlyProductId;
 
   const handleUpgrade = () => {
@@ -124,7 +126,7 @@ function UpgradePage() {
 
       <UpgradeCard className="mt-4">
         <UpgradeCardSection gap="sm">
-          <DashboardHeading3 as="h1" className="text-white">Upgrade to Pro</DashboardHeading3>
+          <DashboardHeading3 as="h1" className="text-white">{t("Upgrade to Pro")}</DashboardHeading3>
           <div className="flex items-baseline gap-1">
             <DashboardHeading1 as="span" className="text-white tabular-nums">${price}</DashboardHeading1>
             <Text size="sm" align="left" className="text-neutral-400">
@@ -132,10 +134,10 @@ function UpgradePage() {
             </Text>
           </div>
           <UpgradeCardToggle checked={yearly} onCheckedChange={handleBillingToggle}>
-            <Text size="sm" tone="highlight">Annual billing</Text>
+            <Text size="sm" tone="highlight">{t("Annual billing")}</Text>
           </UpgradeCardToggle>
           <Text size="sm" align="left" className="text-neutral-400 pt-1">
-            Unlimited calendars, changes within seconds from Google and Outlook, and full control over what every link shows.
+            {t("Unlimited calendars, changes within seconds from Google and Outlook, and full control over what every link shows.")}
           </Text>
         </UpgradeCardSection>
 
@@ -145,7 +147,7 @@ function UpgradePage() {
               <UpgradeCardFeatureIcon>
                 <Check size={14} />
               </UpgradeCardFeatureIcon>
-              <Text size="sm" className="text-neutral-300">{feature}</Text>
+              <Text size="sm" className="text-neutral-300">{t(feature)}</Text>
             </UpgradeCardFeature>
           ))}
         </UpgradeCardSection>
@@ -166,12 +168,13 @@ type UpgradeActionProps = {
 };
 
 function UpgradeAction({ mode, isLoading, onUpgrade, onManage }: UpgradeActionProps) {
+  const t = useT();
   const base = "w-full justify-center border-transparent bg-white text-neutral-900 hover:bg-neutral-100";
 
   const label =
-    mode === "manage" ? "Manage Subscription" :
-    mode === "switch-interval" ? "Switch Billing Period" :
-    isLoading ? "Loading..." : "Upgrade to Pro";
+    mode === "manage" ? t("Manage Subscription") :
+    mode === "switch-interval" ? t("Switch Billing Period") :
+    isLoading ? t("Loading...") : t("Upgrade to Pro");
 
   const handler = mode === "upgrade" ? onUpgrade : onManage;
 

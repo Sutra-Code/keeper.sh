@@ -7,12 +7,14 @@ import { Button, ButtonText, LinkButton } from "@/components/ui/primitives/butto
 import { apiFetch } from "@/lib/fetcher";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { resolveErrorMessage } from "@/utils/errors";
+import { msg, useT } from "@/i18n";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/feedback")({
   component: FeedbackPage,
 });
 
 function FeedbackPage() {
+  const t = useT();
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,7 +38,7 @@ function FeedbackPage() {
       track(ANALYTICS_EVENTS.feedback_submitted);
       setSubmitted(true);
     } catch (err) {
-      setError(resolveErrorMessage(err, "Failed to submit feedback."));
+      setError(resolveErrorMessage(err, msg("Failed to submit feedback.")));
     } finally {
       setIsSubmitting(false);
     }
@@ -47,12 +49,12 @@ function FeedbackPage() {
       <div className="flex flex-col gap-3">
         <BackButton />
         <DashboardSection
-          title="Thank You"
-          description="Your feedback has been submitted. We appreciate you taking the time to help us improve."
+          title={t("Thank You")}
+          description={t("Your feedback has been submitted. We appreciate you taking the time to help us improve.")}
           level={1}
         />
         <LinkButton to="/dashboard" variant="border" className="w-full justify-center">
-          <ButtonText>Back to Dashboard</ButtonText>
+          <ButtonText>{t("Back to Dashboard")}</ButtonText>
         </LinkButton>
       </div>
     );
@@ -62,20 +64,20 @@ function FeedbackPage() {
     <div className="flex flex-col gap-3">
       <BackButton />
       <DashboardSection
-        title="Submit Feedback"
-        description="Let us know how we can improve your experience."
+        title={t("Submit Feedback")}
+        description={t("Let us know how we can improve your experience.")}
         level={1}
       />
       <div className="flex flex-col gap-2">
         <textarea
           ref={messageRef}
-          placeholder="Tell us what's on your mind..."
+          placeholder={t("Tell us what's on your mind...")}
           rows={5}
           className="w-full rounded-xl border border-interactive-border bg-background px-4 py-2.5 text-foreground tracking-tight placeholder:text-foreground-muted resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
-        {error && <Text size="sm" tone="danger">{error}</Text>}
+        {error && <Text size="sm" tone="danger">{t(error)}</Text>}
         <Button className="w-full justify-center" onClick={handleSubmit} disabled={isSubmitting}>
-          <ButtonText>{isSubmitting ? "Submitting..." : "Submit Feedback"}</ButtonText>
+          <ButtonText>{isSubmitting ? t("Submitting...") : t("Submit Feedback")}</ButtonText>
         </Button>
       </div>
     </div>

@@ -8,12 +8,14 @@ import { Checkbox } from "@/components/ui/primitives/checkbox";
 import { apiFetch } from "@/lib/fetcher";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { resolveErrorMessage } from "@/utils/errors";
+import { msg, useT } from "@/i18n";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/report")({
   component: ReportPage,
 });
 
 function ReportPage() {
+  const t = useT();
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const [wantsFollowUp, setWantsFollowUp] = useState(false);
@@ -38,7 +40,7 @@ function ReportPage() {
       track(ANALYTICS_EVENTS.report_submitted, { wants_follow_up: wantsFollowUp });
       setSubmitted(true);
     } catch (err) {
-      setError(resolveErrorMessage(err, "Failed to submit report."));
+      setError(resolveErrorMessage(err, msg("Failed to submit report.")));
     } finally {
       setIsSubmitting(false);
     }
@@ -49,12 +51,12 @@ function ReportPage() {
       <div className="flex flex-col gap-3">
         <BackButton />
         <DashboardSection
-          title="Thank You"
-          description="Your report has been submitted. We'll look into this as soon as possible."
+          title={t("Thank You")}
+          description={t("Your report has been submitted. We'll look into this as soon as possible.")}
           level={1}
         />
         <LinkButton to="/dashboard" variant="border" className="w-full justify-center">
-          <ButtonText>Back to Dashboard</ButtonText>
+          <ButtonText>{t("Back to Dashboard")}</ButtonText>
         </LinkButton>
       </div>
     );
@@ -64,23 +66,23 @@ function ReportPage() {
     <div className="flex flex-col gap-3">
       <BackButton />
       <DashboardSection
-        title="Report a Problem"
-        description="Describe the issue you're experiencing and we'll work on a fix."
+        title={t("Report a Problem")}
+        description={t("Describe the issue you're experiencing and we'll work on a fix.")}
         level={1}
       />
       <div className="flex flex-col gap-2">
         <textarea
           ref={messageRef}
-          placeholder="Describe the problem you're experiencing..."
+          placeholder={t("Describe the problem you're experiencing...")}
           rows={5}
           className="w-full rounded-xl border border-interactive-border bg-background px-4 py-2.5 text-foreground tracking-tight placeholder:text-foreground-muted resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
-        {error && <Text size="sm" tone="danger">{error}</Text>}
+        {error && <Text size="sm" tone="danger">{t(error)}</Text>}
         <Button className="w-full justify-center" onClick={handleSubmit} disabled={isSubmitting}>
-          <ButtonText>{isSubmitting ? "Submitting..." : "Submit Report"}</ButtonText>
+          <ButtonText>{isSubmitting ? t("Submitting...") : t("Submit Report")}</ButtonText>
         </Button>
         <Checkbox checked={wantsFollowUp} onCheckedChange={setWantsFollowUp}>
-          Notify me when this is addressed
+          {t("Notify me when this is addressed")}
         </Checkbox>
       </div>
     </div>

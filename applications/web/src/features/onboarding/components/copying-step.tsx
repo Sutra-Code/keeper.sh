@@ -9,6 +9,7 @@ import { ShimmerText } from "@/components/ui/primitives/shimmer-text";
 import { SyncProgressCircle } from "@/features/dashboard/components/sync-status";
 import { syncStateAtom } from "@/state/sync";
 import type { CalendarSource } from "@/types/api";
+import { useT } from "@/i18n";
 import type { CopiedEvents } from "../use-copied-events";
 import { describeRemainingEvents, describeTimeLeft, resolveCopyPercent } from "../copy-progress";
 import { useCopyProgress } from "../use-copy-progress";
@@ -21,13 +22,14 @@ interface CopyingStepProps {
 }
 
 export function CopyingStep({ copies, calendars }: CopyingStepProps) {
+  const t = useT();
   const sync = useAtomValue(syncStateAtom);
   const progress = useCopyProgress();
-  const remainingLabel = describeRemainingEvents(progress);
+  const remainingLabel = describeRemainingEvents(progress, t);
 
   return (
     <>
-      <OnboardingHeading title="Copying your events" description={describeTimeLeft(progress?.secondsRemaining ?? null)} />
+      <OnboardingHeading title={t("Copying your events")} description={describeTimeLeft(progress?.secondsRemaining ?? null, t)} />
       <NavigationMenu>
         <CopiedEventRows events={copies?.upcoming ?? []} calendars={calendars} showsCheck />
         <NavigationMenuItem>

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/composites/navigation-menu/navigation-menu-items";
 import { ExternalTextLink } from "@/components/ui/primitives/text-link";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
+import { useT } from "@/i18n";
 
 interface AppPasswordHelpProps {
   provider: string;
@@ -19,6 +20,7 @@ interface AppPasswordHelpProps {
 }
 
 export function AppPasswordHelp({ provider, settingsUrl, settingsLabel, sectionLabel }: AppPasswordHelpProps) {
+  const t = useT();
   return (
     <NavigationMenu>
       <NavigationMenuItem>
@@ -46,7 +48,7 @@ export function AppPasswordHelp({ provider, settingsUrl, settingsLabel, sectionL
         <NavigationMenuItemIcon>
           <Copy size={15} />
         </NavigationMenuItemIcon>
-        <NavigationMenuItemLabel>Generate one and paste it above</NavigationMenuItemLabel>
+        <NavigationMenuItemLabel>{t("Generate one and paste it above")}</NavigationMenuItemLabel>
       </NavigationMenuItem>
     </NavigationMenu>
   );

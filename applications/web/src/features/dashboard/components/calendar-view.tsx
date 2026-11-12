@@ -5,6 +5,7 @@ import { calendarJumpAtom } from "@/state/event-graph-hover";
 import ChevronLeft from "lucide-react/dist/esm/icons/chevron-left";
 import ChevronRight from "lucide-react/dist/esm/icons/chevron-right";
 import { cn } from "@/utils/cn";
+import { msg, useLocale, useT } from "@/i18n";
 import { useEventsInRange } from "@/hooks/use-events";
 import { MonthGrid } from "./month-grid";
 import { WeekGrid } from "./week-grid";
@@ -23,10 +24,17 @@ type CalendarViewMode = "week" | "month";
 
 const VIEWS: CalendarViewMode[] = ["week", "month"];
 
+const VIEW_LABELS: Record<CalendarViewMode, string> = {
+  week: msg("Week"),
+  month: msg("Month"),
+};
+
 const navButton =
   "flex size-9 items-center justify-center rounded-xl bg-background text-foreground hover:bg-background-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function CalendarView() {
+  const t = useT();
+  const locale = useLocale();
   const [view, setView] = useState<CalendarViewMode>("week");
   const [anchor, setAnchor] = useState(() => new Date());
 
@@ -54,7 +62,7 @@ export function CalendarView() {
     [events, fetchStartMs, fetchEndMs],
   );
 
-  const title = view === "month" ? formatMonthTitle(anchor) : formatWeekTitle(anchor);
+  const title = view === "month" ? formatMonthTitle(anchor, locale) : formatWeekTitle(anchor, locale);
 
   const switchView = (mode: CalendarViewMode) => {
     if (mode === view) return;
@@ -93,7 +101,7 @@ export function CalendarView() {
                   : "text-foreground-muted hover:text-foreground",
               )}
             >
-              {mode}
+              {t(VIEW_LABELS[mode])}
             </button>
           ))}
         </div>
@@ -103,17 +111,17 @@ export function CalendarView() {
             className="h-9 rounded-xl bg-background px-3 text-sm font-medium text-foreground hover:bg-background-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => setAnchor(new Date())}
           >
-            Today
+            {t("Today")}
           </button>
           <button
             type="button"
-            aria-label="Previous"
+            aria-label={t("Previous")}
             className={navButton}
             onClick={() => step(-1)}
           >
             <ChevronLeft size={16} />
           </button>
-          <button type="button" aria-label="Next" className={navButton} onClick={() => step(1)}>
+          <button type="button" aria-label={t("Next")} className={navButton} onClick={() => step(1)}>
             <ChevronRight size={16} />
           </button>
         </div>

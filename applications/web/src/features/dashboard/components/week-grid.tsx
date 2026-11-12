@@ -3,6 +3,7 @@ import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { atom, useAtomValue, useSetAtom } from "jotai";
 import { cn } from "@/utils/cn";
+import { useLocale } from "@/i18n";
 import { resolveDataAttr } from "@/utils/data-attr";
 import { eventDetailAtom } from "@/state/event-detail";
 import {
@@ -38,6 +39,7 @@ import type { Period } from "./density-period";
 import {
   addDays,
   formatHourLabel,
+  formatWeekdayShort,
   HOUR_HEIGHT,
   HOURS,
   isSameDay,
@@ -110,6 +112,7 @@ const DayHeaderCell = memo(function DayHeaderCell({
   const period = resolvePeriod(dayOffset);
   const setGraphHoverIndex = useSetAtom(eventGraphHoverIndexAtom);
   const active = useCalendarHighlightedDay(dayOffset);
+  const locale = useLocale();
 
   return (
     <div
@@ -140,7 +143,7 @@ const DayHeaderCell = memo(function DayHeaderCell({
           style={{ height: HEADER_HEIGHT }}
         >
           <Text as="span" size="xs" tone="muted" className="font-medium tracking-wide">
-            {day.toLocaleDateString("en-US", { weekday: "short" })}
+            {formatWeekdayShort(day, locale)}
           </Text>
           <span
             className={cn(
@@ -176,6 +179,7 @@ interface WeekGridProps {
 
 export function WeekGrid({ anchor, eventsByDay, onCenterDayChange, toolbar }: WeekGridProps) {
   const today = useStartOfToday();
+  const locale = useLocale();
   const router = useRouter();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
@@ -448,7 +452,7 @@ export function WeekGrid({ anchor, eventsByDay, onCenterDayChange, toolbar }: We
               )}
               style={{ top: hour * HOUR_HEIGHT }}
             >
-              {formatHourLabel(hour)}
+              {formatHourLabel(hour, locale)}
             </span>
           ))}
           {nowLayout && <NowPill layout={nowLayout} />}

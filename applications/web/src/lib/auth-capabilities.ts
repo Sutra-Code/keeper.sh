@@ -1,6 +1,7 @@
 import { authCapabilitiesSchema } from "@keeper.sh/data-schemas";
 import type { AuthCapabilities } from "@keeper.sh/data-schemas";
 import type { AppJsonFetcher } from "./router-context";
+import { msg } from "@/i18n";
 
 type SocialProviderId = keyof AuthCapabilities["socialProviders"];
 
@@ -20,7 +21,7 @@ const resolveCredentialField = (
     return {
       autoComplete: "username",
       id: "username",
-      label: "Username",
+      label: msg("Username"),
       name: "username",
       placeholder: "johndoe",
       type: "text",
@@ -30,7 +31,7 @@ const resolveCredentialField = (
   return {
     autoComplete: "email",
     id: "email",
-    label: "Email",
+    label: msg("Email"),
     name: "email",
     placeholder: "johndoe+keeper@example.com",
     type: "email",

@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays,
+  formatHourLabel,
+  formatMonthTitle,
+  formatWeekTitle,
+  formatWeekdayShort,
   getMonthFetchRange,
   getMonthGridDays,
+  getWeekdayLabels,
   getWeekFetchRange,
   startOfVisibleWeek,
   WEEK_STARTS_ON,
@@ -52,5 +57,35 @@ describe("getMonthFetchRange", () => {
     expect(start.getTime()).toBe(days[0].getTime());
     expect(end.getTime()).toBe(addDays(days[41], 1).getTime());
     expect(Math.round((end.getTime() - start.getTime()) / MS_PER_DAY)).toBe(42);
+  });
+});
+
+describe("date labels", () => {
+  it("names weekdays in the active language, short and capitalised", () => {
+    expect(getWeekdayLabels("en")).toEqual(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
+    expect(getWeekdayLabels("es")).toEqual(["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]);
+    expect(formatWeekdayShort(new Date(2026, 7, 19), "es")).toBe("Mié");
+  });
+
+  it("titles a month in the active language", () => {
+    expect(formatMonthTitle(new Date(2026, 7, 22), "en")).toBe("August 2026");
+    expect(formatMonthTitle(new Date(2026, 7, 22), "es")).toBe("Agosto de 2026");
+  });
+
+  it("titles a week within one month", () => {
+    expect(formatWeekTitle(new Date(2026, 7, 22), "en")).toBe("Aug 19 – 25, 2026");
+    expect(formatWeekTitle(new Date(2026, 7, 22), "es")).toBe("19 – 25 ago 2026");
+  });
+
+  it("titles a week that crosses a month or a year", () => {
+    expect(formatWeekTitle(new Date(2026, 9, 31), "en")).toBe("Oct 28 – Nov 3, 2026");
+    expect(formatWeekTitle(new Date(2026, 9, 31), "es")).toBe("28 oct – 3 nov 2026");
+    expect(formatWeekTitle(new Date(2026, 11, 31), "en")).toBe("Dec 28, 2026 – Jan 3, 2027");
+    expect(formatWeekTitle(new Date(2026, 11, 31), "es")).toBe("28 dic 2026 – 3 ene 2027");
+  });
+
+  it("labels hours on a compact twelve-hour clock in both languages", () => {
+    expect([1, 12, 13, 23].map((hour) => formatHourLabel(hour, "en"))).toEqual(["1am", "12pm", "1pm", "11pm"]);
+    expect([1, 12, 13, 23].map((hour) => formatHourLabel(hour, "es"))).toEqual(["1am", "12pm", "1pm", "11pm"]);
   });
 });

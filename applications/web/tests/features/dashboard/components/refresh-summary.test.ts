@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { translate, type Translate } from "../../../../src/i18n";
 import {
   formatRefreshFailures,
   formatRefreshSummary,
@@ -36,6 +37,17 @@ describe("formatRefreshSummary", () => {
   it("reports a disappearance on its own", () => {
     expect(formatRefreshSummary({ added: 0, revived: 0, unavailable: 1 }))
       .toBe("1 calendar is no longer available.");
+  });
+});
+
+describe("translated summaries", () => {
+  const inSpanish: Translate = (text, values) => translate("es", text, values);
+
+  it("builds the summary in the language of the translator it is given", () => {
+    expect(formatRefreshSummary({ added: 2, revived: 1, unavailable: 0 }, inSpanish))
+      .toBe("Se encontraron 2 calendarios nuevos. 1 calendario vuelve a estar disponible.");
+    expect(formatRefreshFailures(1, inSpanish))
+      .toBe("No se pudo actualizar 1 cuenta. Ábrela para volver a conectarla.");
   });
 });
 

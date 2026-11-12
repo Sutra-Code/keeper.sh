@@ -4,6 +4,7 @@ import { Heading2 } from "@/components/ui/primitives/heading";
 import { Text } from "@/components/ui/primitives/text";
 import { describeOAuthConnectFailure, isAdminApprovalFailure } from "@/lib/connect-failures";
 import { AdminApproval } from "@/features/onboarding/components/admin-approval";
+import { useT } from "@/i18n";
 
 interface SearchParams {
   reason?: string;
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/(dashboard)/dashboard/integrations/")({
 });
 
 function OAuthCallbackErrorPage() {
+  const t = useT();
   const { reason, approvalUrl } = Route.useSearch();
 
   if (isAdminApprovalFailure(reason) && approvalUrl) {
@@ -39,8 +41,8 @@ function OAuthCallbackErrorPage() {
     <div className="flex flex-col gap-3">
       <BackButton />
       <div className="flex flex-col gap-1 py-2">
-        <Heading2 as="span" className="text-center">Connection failed</Heading2>
-        <Text size="sm" tone="muted" align="center">{describeOAuthConnectFailure(reason)}</Text>
+        <Heading2 as="span" className="text-center">{t("Connection failed")}</Heading2>
+        <Text size="sm" tone="muted" align="center">{t(describeOAuthConnectFailure(reason))}</Text>
       </div>
     </div>
   );

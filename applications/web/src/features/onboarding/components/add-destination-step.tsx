@@ -18,6 +18,7 @@ import { chosenDestinationIdAtom } from "@/state/onboarding";
 import { showToastAtom } from "@/state/toast";
 import { getCalendarProvider } from "@/utils/calendars";
 import type { CalendarSource } from "@/types/api";
+import { useT } from "@/i18n";
 import { OnboardingHeading } from "./onboarding-heading";
 import { ProviderOptions } from "./provider-options";
 
@@ -27,6 +28,7 @@ interface AddDestinationStepProps {
 }
 
 export function AddDestinationStep({ origin, sameAccountDestinations }: AddDestinationStepProps) {
+  const t = useT();
   const chooseDestination = useSetAtom(chosenDestinationIdAtom);
 
   const chooseSameAccount = (calendar: CalendarSource) => {
@@ -37,8 +39,10 @@ export function AddDestinationStep({ origin, sameAccountDestinations }: AddDesti
   return (
     <>
       <OnboardingHeading
-        title="Where should your busy time show?"
-        description={`Keeper.sh copies events from ${origin.name} into a second calendar. Connect the one that should show you as busy.`}
+        title={t("Where should your busy time show?")}
+        description={t("SutraCode Calendar copies events from {calendar} into a second calendar. Connect the one that should show you as busy.", {
+          calendar: origin.name,
+        })}
       />
       <NavigationMenu>
         <NavigationMenuItem>
@@ -68,6 +72,7 @@ export function AddDestinationStep({ origin, sameAccountDestinations }: AddDesti
 }
 
 function SubscribeLinkOption() {
+  const t = useT();
   const { data: feeds } = useIcalFeeds();
   const showToast = useSetAtom(showToastAtom);
   const [copied, setCopied] = useState(false);
@@ -79,7 +84,7 @@ function SubscribeLinkOption() {
     track(ANALYTICS_EVENTS.onboarding_destination_chosen, { destination_path: "ical_link" });
     track(ANALYTICS_EVENTS.ical_link_copied);
     setCopied(true);
-    showToast("Link copied");
+    showToast(t("Link copied"));
   };
 
   return (
@@ -88,7 +93,7 @@ function SubscribeLinkOption() {
         <NavigationMenuItemIcon>
           <Link2 size={15} />
         </NavigationMenuItemIcon>
-        <NavigationMenuItemLabel>Subscribe with a link instead</NavigationMenuItemLabel>
+        <NavigationMenuItemLabel>{t("Subscribe with a link instead")}</NavigationMenuItemLabel>
         <NavigationMenuItemTrailing indicator={copied ? <Check size={15} className="shrink-0" /> : <Copy size={15} className="shrink-0" />} />
       </NavigationMenuButtonItem>
     </NavigationMenu>

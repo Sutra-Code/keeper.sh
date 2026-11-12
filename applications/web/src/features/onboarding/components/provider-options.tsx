@@ -8,10 +8,11 @@ import {
 } from "@/components/ui/composites/navigation-menu/navigation-menu-items";
 import { ProviderIcon } from "@/components/ui/primitives/provider-icon";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
+import { msg, useT } from "@/i18n";
 
 const COMMON_PROVIDERS = [
   { label: "Google Calendar", path: "/dashboard/connect/google", provider: "google" },
-  { label: "Outlook or Microsoft 365", path: "/dashboard/connect/outlook", provider: "outlook" },
+  { label: msg("Outlook or Microsoft 365"), path: "/dashboard/connect/outlook", provider: "outlook" },
   { label: "iCloud", path: "/dashboard/connect/apple", provider: "icloud" },
 ] as const;
 
@@ -20,6 +21,7 @@ interface ProviderOptionsProps {
 }
 
 export function ProviderOptions({ step }: ProviderOptionsProps) {
+  const t = useT();
   const choose = (provider: string) => {
     track(ANALYTICS_EVENTS.onboarding_provider_chosen, { onboarding_step: step, provider_name: provider });
   };
@@ -33,7 +35,7 @@ export function ProviderOptions({ step }: ProviderOptionsProps) {
               <NavigationMenuItemIcon>
                 <ProviderIcon provider={provider} />
               </NavigationMenuItemIcon>
-              <NavigationMenuItemLabel>{label}</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>{t(label)}</NavigationMenuItemLabel>
               <NavigationMenuItemTrailing />
             </NavigationMenuLinkItem>
           </div>
@@ -45,7 +47,7 @@ export function ProviderOptions({ step }: ProviderOptionsProps) {
             <NavigationMenuItemIcon>
               <MoreHorizontal size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>Fastmail, CalDAV or a calendar link</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t("Fastmail, CalDAV or a calendar link")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing />
           </NavigationMenuLinkItem>
         </div>

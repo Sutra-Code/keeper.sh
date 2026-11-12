@@ -13,15 +13,15 @@ import {
   eventGraphPointerAtom,
 } from "@/state/event-graph-hover";
 import { resolveDataAttr } from "@/utils/data-attr";
+import { intlLocale, useLocale, useT, type Locale, type Translate } from "@/i18n";
 import { fetcher } from "@/lib/fetcher";
 import { useAnimatedSWR } from "@/hooks/use-animated-swr";
-import { pluralize } from "@/lib/pluralize";
 import { Text } from "@/components/ui/primitives/text";
 import { useStartOfToday } from "@/hooks/use-start-of-today";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { ApiEventSummary } from "@/types/api";
 import { buildEventsUrl } from "@/lib/events-url";
-import { addDays } from "./calendar-helpers";
+import { addDays, capitalizeFirst } from "./calendar-helpers";
 import { countEventsByDay } from "./event-graph-counts";
 import { periodFill, resolvePeriod } from "./density-period";
 import type { Period } from "./density-period";
@@ -46,12 +46,15 @@ interface DayData {
   period: Period;
 }
 
-const formatDayLabel = (day: Date): string =>
-  day.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
+const formatDayLabel = (day: Date, locale: Locale): string =>
+  capitalizeFirst(
+    day.toLocaleDateString(intlLocale(locale), {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    }),
+    locale,
+  );
 
 const GROWTH_SPACE = GRAPH_HEIGHT - MIN_BAR_HEIGHT;
 
@@ -59,7 +62,7 @@ function resolveBarHeight(count: number, maxCount: number): number {
   return MIN_BAR_HEIGHT + (count / maxCount) * GROWTH_SPACE;
 }
 
-const normalizeDayData = (counts: number[], todayStart: Date): DayData[] => {
+const normalizeDayData = (counts: number[], todayStart: Date, locale: Locale): DayData[] => {
   const maxCount = Math.max(...counts, 1);
 
   return counts.map((count, slotIndex) => {
@@ -70,15 +73,15 @@ const normalizeDayData = (counts: number[], todayStart: Date): DayData[] => {
       dayOffset,
       dayMs: day.getTime(),
       height: resolveBarHeight(count, maxCount),
-      fullLabel: formatDayLabel(day),
+      fullLabel: formatDayLabel(day, locale),
       period: resolvePeriod(dayOffset),
     };
   });
 };
 
-const buildDays = (events: ApiEventSummary[], todayStart: Date): DayData[] => {
+const buildDays = (events: ApiEventSummary[], todayStart: Date, locale: Locale): DayData[] => {
   const counts = countEventsByDay(events, todayStart);
-  return normalizeDayData(counts, todayStart);
+  return normalizeDayData(counts, todayStart, locale);
 };
 
 function resolveWeekTotal(days: DayData[]): number {
@@ -90,9 +93,9 @@ function resolveEventCount(hoverIndex: number | null, days: DayData[]): number {
   return resolveWeekTotal(days);
 }
 
-function resolveLabel(hoverIndex: number | null, days: DayData[]): string {
+function resolveLabel(hoverIndex: number | null, days: DayData[], t: Translate): string {
   if (hoverIndex !== null) return days[hoverIndex].fullLabel;
-  return "This week";
+  return t("This week");
 }
 
 interface EventGraphSummaryProps {
@@ -109,19 +112,21 @@ function EventGraphSummary({ days }: EventGraphSummaryProps) {
 }
 
 function EventGraphEventCount({ days }: EventGraphSummaryProps) {
+  const t = useT();
   const hoverIndex = useAtomValue(eventGraphHoverIndexAtom);
   const count = resolveEventCount(hoverIndex, days);
 
   return (
     <Text size="sm" tone="muted" align="right" className="tabular-nums">
-      {pluralize(count, "event")}
+      {count === 1 ? t("{count} event", { count }) : t("{count} events", { count })}
     </Text>
   );
 }
 
 function EventGraphLabel({ days }: EventGraphSummaryProps) {
+  const t = useT();
   const hoverIndex = useAtomValue(eventGraphHoverIndexAtom);
-  const label = resolveLabel(hoverIndex, days);
+  const label = resolveLabel(hoverIndex, days, t);
 
   return (
     <Text size="sm" tone="muted" align="right" className="tabular-nums">
@@ -311,9 +316,10 @@ function EventGraphBars({ days, shouldAnimate }: EventGraphBarsProps) {
 
 export function EventGraph() {
   const todayStart = useStartOfToday();
+  const locale = useLocale();
   const graphUrl = buildGraphUrl(todayStart);
   const { data: events, shouldAnimate } = useAnimatedSWR<ApiEventSummary[]>(graphUrl, { fetcher });
-  const days = buildDays(events ?? [], todayStart);
+  const days = buildDays(events ?? [], todayStart, locale);
 
   return (
     <LazyMotion features={loadMotionFeatures}>

@@ -6,6 +6,7 @@ import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { isEventsKey } from "@/lib/swr";
 import { onboardingRunAtom } from "@/state/onboarding";
 import { syncStateAtom } from "@/state/sync";
+import { useT } from "@/i18n";
 import type { OnboardingState } from "../use-onboarding";
 import { resolveCopiesVersion } from "../copies-version";
 import { useSettleFirstSync } from "../use-settle-first-sync";
@@ -51,10 +52,11 @@ function useLivePreview() {
 }
 
 function LeaveSetup() {
+  const t = useT();
   const setRun = useSetAtom(onboardingRunAtom);
   return (
     <Button variant="ghost" className="w-full justify-center" onClick={() => setRun({ phase: "finished" })}>
-      <ButtonText>Go to home</ButtonText>
+      <ButtonText>{t("Go to home")}</ButtonText>
     </Button>
   );
 }

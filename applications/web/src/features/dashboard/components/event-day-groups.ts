@@ -1,6 +1,7 @@
 import { formatDayHeader } from "@/lib/time";
 import { resolveEventLocalStart, resolveEventStartDay } from "@/lib/event-day";
 import type { CalendarEvent } from "@/hooks/use-events";
+import type { Locale } from "@/i18n";
 
 export interface DayGroup {
   label: string;
@@ -10,7 +11,7 @@ export interface DayGroup {
 const compareLocalStart = (left: CalendarEvent, right: CalendarEvent): number =>
   resolveEventLocalStart(left).getTime() - resolveEventLocalStart(right).getTime();
 
-export const groupEventsByDay = (events: CalendarEvent[]): DayGroup[] => {
+export const groupEventsByDay = (events: CalendarEvent[], locale: Locale = "en"): DayGroup[] => {
   const groups = new Map<number, CalendarEvent[]>();
 
   for (const event of [...events].sort(compareLocalStart)) {
@@ -21,7 +22,7 @@ export const groupEventsByDay = (events: CalendarEvent[]): DayGroup[] => {
   }
 
   return [...groups.entries()].map(([key, dayEvents]) => ({
-    label: formatDayHeader(new Date(key)),
+    label: formatDayHeader(new Date(key), locale),
     events: dayEvents,
   }));
 };

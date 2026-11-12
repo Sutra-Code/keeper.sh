@@ -9,10 +9,11 @@ import {
 import { NavigationMenuPopover } from "@/components/ui/composites/navigation-menu/navigation-menu-popover";
 import { ProviderIcon } from "@/components/ui/primitives/provider-icon";
 import { ProviderIconStack } from "@/components/ui/primitives/provider-icon-stack";
-import { pluralize } from "@/lib/pluralize";
+import { useT } from "@/i18n";
 import { reauthHref, useReauthAccounts } from "./use-reauth-accounts";
 
 export function DashboardReauthNotice() {
+  const t = useT();
   const accounts = useReauthAccounts();
 
   if (accounts.length === 0) return null;
@@ -26,7 +27,9 @@ export function DashboardReauthNotice() {
               <TriangleAlert size={15} />
             </NavigationMenuItemIcon>
             <NavigationMenuItemLabel>
-              Reconnect {pluralize(accounts.length, "account")}
+              {accounts.length === 1
+                ? t("Reconnect {count} account", { count: accounts.length })
+                : t("Reconnect {count} accounts", { count: accounts.length })}
             </NavigationMenuItemLabel>
             <NavigationMenuItemTrailing>
               <ProviderIconStack providers={accounts} />

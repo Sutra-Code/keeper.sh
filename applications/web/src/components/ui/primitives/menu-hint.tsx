@@ -2,6 +2,7 @@ import type { CSSProperties, ComponentPropsWithoutRef, PropsWithChildren, ReactN
 import { Link } from "@tanstack/react-router";
 import { getCommercialMode } from "@/config/commercial";
 import { Text } from "./text";
+import { msg, useT } from "@/i18n";
 
 type GateTone = "muted" | "attention";
 
@@ -12,7 +13,7 @@ interface GateAction {
   trailing?: string;
 }
 
-const UPGRADE_ACTION: GateAction = { label: "Upgrade to Pro", to: "/dashboard/upgrade" };
+const UPGRADE_ACTION: GateAction = { label: msg("Upgrade to Pro"), to: "/dashboard/upgrade" };
 
 const GATE_CLASS: Record<GateTone, string> = {
   muted: "-mx-1 flex flex-col gap-1 rounded-[1.25rem] border border-border-elevated p-1",
@@ -50,6 +51,8 @@ function MenuHint({
   className,
   children,
 }: PropsWithChildren<MenuHintProps>) {
+  const t = useT();
+
   return (
     <Text
       size="sm"
@@ -62,7 +65,7 @@ function MenuHint({
         <>
           {" "}
           <Link to={action.to} className="underline underline-offset-2">
-            {action.label}
+            {t(action.label)}
           </Link>
           {action.trailing}
         </>

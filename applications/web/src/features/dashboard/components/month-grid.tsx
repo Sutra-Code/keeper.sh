@@ -1,13 +1,14 @@
 import { useCallback, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/utils/cn";
+import { useLocale } from "@/i18n";
 import { useStartOfToday } from "@/hooks/use-start-of-today";
 import { isEventPast } from "@/lib/time";
 import { resolveEventLocalEnd } from "@/lib/event-day";
 import type { CalendarEvent } from "@/hooks/use-events";
 import { Text } from "@/components/ui/primitives/text";
 import { CalendarFrame } from "./calendar-frame";
-import { isSameDay, isSameMonth, WEEKDAY_LABELS } from "./calendar-helpers";
+import { getWeekdayLabels, isSameDay, isSameMonth } from "./calendar-helpers";
 import { EventPill, EventPillOverflow } from "./event-card";
 import { EVENT_PILL_GAP_PX, resolvePillRows, resolveVisiblePillCount } from "./event-layout";
 import type { DayEvents } from "./event-layout";
@@ -37,6 +38,7 @@ const NO_EVENTS: CalendarEvent[] = [];
 
 export function MonthGrid({ anchor, days, eventsByDay, toolbar }: MonthGridProps) {
   const today = useStartOfToday();
+  const locale = useLocale();
   const [pillRows, setPillRows] = useState(0);
 
   // A callback ref, not a mount effect: paging mounts a new first cell, and an observer
@@ -55,7 +57,7 @@ export function MonthGrid({ anchor, days, eventsByDay, toolbar }: MonthGridProps
       toolbar={toolbar}
       columnHeader={
         <div className="grid grid-cols-7">
-          {WEEKDAY_LABELS.map((label) => (
+          {getWeekdayLabels(locale).map((label) => (
             <Text
               key={label}
               as="span"

@@ -21,6 +21,7 @@ import { ProviderIcon } from "@/components/ui/primitives/provider-icon";
 import { RouteShell } from "@/components/ui/shells/route-shell";
 import { canPull, canPush, getCalendarProvider } from "@/utils/calendars";
 import { useMappingToggles } from "@/hooks/use-mapping-toggles";
+import { useT } from "@/i18n";
 
 const VALID_STEPS = ["select", "rename", "destinations", "sources"] as const;
 type SetupStep = (typeof VALID_STEPS)[number];
@@ -178,6 +179,8 @@ function SetupStepContent({
   mutateCalendars: ReturnType<typeof useSWR<CalendarSource[]>>["mutate"];
   actions: SetupStepActions;
 }) {
+  const t = useT();
+
   if (step === "select") {
     return (
       <SelectSection
@@ -200,13 +203,13 @@ function SetupStepContent({
   if (step === "destinations") {
     const calendar = workflow.destinationCalendars[workflow.destinationCalendarIndex];
     const onNext = () => actions.advanceFromDestinations(workflow.destinationCalendarIndex);
-    if (!calendar) return <EmptyStepSection heading="No destination setup needed" message="None of the selected calendars can send events right now." buttonLabel="Continue" onNext={onNext} />;
+    if (!calendar) return <EmptyStepSection heading={t("No destination setup needed")} message={t("None of the selected calendars can send events right now.")} buttonLabel={t("Continue")} onNext={onNext} />;
     return <DestinationsSection calendar={calendar} allCalendars={allCalendars} onNext={onNext} />;
   }
 
   const calendar = workflow.sourceCalendars[workflow.sourceCalendarIndex];
   const onNext = () => actions.advanceFromSources(workflow.sourceCalendarIndex);
-  if (!calendar) return <EmptyStepSection heading="No source setup needed" message="None of the selected calendars can pull events right now." buttonLabel="Finish" onNext={onNext} />;
+  if (!calendar) return <EmptyStepSection heading={t("No source setup needed")} message={t("None of the selected calendars can pull events right now.")} buttonLabel={t("Finish")} onNext={onNext} />;
   return <SourcesSection calendar={calendar} allCalendars={allCalendars} onNext={onNext} />;
 }
 
@@ -275,6 +278,7 @@ function SelectSection({
   accountId: string;
   calendars: CalendarSource[];
 }) {
+  const t = useT();
   const navigate = useNavigate();
   const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(new Set());
 
@@ -302,8 +306,8 @@ function SelectSection({
   return (
     <>
       <DashboardSection
-        title="Which calendars would you like to configure?"
-        description="Select the calendars you want to rename and set up."
+        title={t("Which calendars would you like to configure?")}
+        description={t("Select the calendars you want to rename and set up.")}
       />
       <NavigationMenu>
         {calendars.map((calendar) => (
@@ -328,7 +332,7 @@ function SelectSection({
           disabled={localSelectedIds.size === 0}
           onClick={handleNext}
         >
-          <ButtonText>Next</ButtonText>
+          <ButtonText>{t("Next")}</ButtonText>
         </Button>
         <LinkButton
           to="/dashboard"
@@ -336,7 +340,7 @@ function SelectSection({
           className="w-full justify-center"
           data-visitors-event={ANALYTICS_EVENTS.setup_skipped}
         >
-          <ButtonText>Skip</ButtonText>
+          <ButtonText>{t("Skip")}</ButtonText>
         </LinkButton>
       </div>
     </>
@@ -352,6 +356,7 @@ function RenameSection({
   mutateCalendars: ReturnType<typeof useSWR<CalendarSource[]>>["mutate"];
   onNext: () => void;
 }) {
+  const t = useT();
   const handleRename = async (calendarId: string, name: string) => {
     await mutateCalendars(
       async (current) => {
@@ -378,8 +383,8 @@ function RenameSection({
   return (
     <>
       <DashboardSection
-        title="Rename Your Calendars"
-        description="Provider names are often generic. Click a calendar to give it a more meaningful name."
+        title={t("Rename Your Calendars")}
+        description={t("Provider names are often generic. Click a calendar to give it a more meaningful name.")}
       />
       <NavigationMenu>
         {calendars.map((calendar, index) => (
@@ -395,7 +400,7 @@ function RenameSection({
         className="w-full justify-center"
         onClick={onNext}
       >
-        <ButtonText>Next</ButtonText>
+        <ButtonText>{t("Next")}</ButtonText>
       </Button>
     </>
   );
@@ -426,6 +431,7 @@ function DestinationsSection({
   allCalendars: CalendarSource[];
   onNext: () => void;
 }) {
+  const t = useT();
   const { mappedIds, toggle } = useMappingToggles(calendar.id, "destinations");
   const selectedIds = new Set(mappedIds);
   const { data: entitlements } = useEntitlements();
@@ -438,13 +444,13 @@ function DestinationsSection({
   return (
     <>
       <DashboardSection
-        title={<>Where should &apos;{calendar.name}&apos; send events?</>}
-        description="Select which calendars should receive events from this calendar."
+        title={t("Where should '{name}' send events?", { name: calendar.name })}
+        description={t("Select which calendars should receive events from this calendar.")}
         headingClassName="overflow-visible text-wrap whitespace-normal"
       />
       <NavigationMenu>
         {pushCalendars.length === 0 && (
-          <NavigationMenuEmptyItem>No destination calendars available</NavigationMenuEmptyItem>
+          <NavigationMenuEmptyItem>{t("No destination calendars available")}</NavigationMenuEmptyItem>
         )}
         {pushCalendars.map((destination) => {
           const checked = selectedIds.has(destination.id);
@@ -467,12 +473,12 @@ function DestinationsSection({
           );
         })}
       </NavigationMenu>
-      {atLimit && <PremiumHint>Mapping limit reached.</PremiumHint>}
+      {atLimit && <PremiumHint>{t("Mapping limit reached.")}</PremiumHint>}
       <Button
         className="w-full justify-center"
         onClick={onNext}
       >
-        <ButtonText>Next</ButtonText>
+        <ButtonText>{t("Next")}</ButtonText>
       </Button>
     </>
   );
@@ -487,6 +493,7 @@ function SourcesSection({
   allCalendars: CalendarSource[];
   onNext: () => void;
 }) {
+  const t = useT();
   const { mappedIds, toggle } = useMappingToggles(calendar.id, "sources");
   const selectedIds = new Set(mappedIds);
   const { data: entitlements } = useEntitlements();
@@ -499,13 +506,13 @@ function SourcesSection({
   return (
     <>
       <DashboardSection
-        title={<>Where should &apos;{calendar.name}&apos; pull events from?</>}
-        description="Select which calendars should send events to this calendar."
+        title={t("Where should '{name}' pull events from?", { name: calendar.name })}
+        description={t("Select which calendars should send events to this calendar.")}
         headingClassName="overflow-visible text-wrap whitespace-normal"
       />
       <NavigationMenu>
         {pullCalendars.length === 0 && (
-          <NavigationMenuEmptyItem>No source calendars available</NavigationMenuEmptyItem>
+          <NavigationMenuEmptyItem>{t("No source calendars available")}</NavigationMenuEmptyItem>
         )}
         {pullCalendars.map((source) => {
           const checked = selectedIds.has(source.id);
@@ -528,12 +535,12 @@ function SourcesSection({
           );
         })}
       </NavigationMenu>
-      {atLimit && <PremiumHint>Mapping limit reached.</PremiumHint>}
+      {atLimit && <PremiumHint>{t("Mapping limit reached.")}</PremiumHint>}
       <Button
         className="w-full justify-center"
         onClick={onNext}
       >
-        <ButtonText>Next</ButtonText>
+        <ButtonText>{t("Next")}</ButtonText>
       </Button>
     </>
   );

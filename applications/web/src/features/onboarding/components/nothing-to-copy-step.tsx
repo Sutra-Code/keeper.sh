@@ -9,6 +9,7 @@ import { providerCalendarApp } from "@/lib/providers";
 import { onboardingRunAtom } from "@/state/onboarding";
 import { getCalendarProvider } from "@/utils/calendars";
 import type { CalendarSource } from "@/types/api";
+import { useT } from "@/i18n";
 import type { SyncProposal } from "../sync-proposal";
 import { useSyncPairs } from "../use-sync-pairs";
 import { OnboardingHeading } from "./onboarding-heading";
@@ -20,6 +21,7 @@ interface NothingToCopyStepProps {
 }
 
 export function NothingToCopyStep({ proposal, calendars }: NothingToCopyStepProps) {
+  const t = useT();
   const setRun = useSetAtom(onboardingRunAtom);
   const source = proposal.forward ? proposal.origin : proposal.destination;
   const calendarApp = providerCalendarApp(getCalendarProvider(source));
@@ -33,8 +35,10 @@ export function NothingToCopyStep({ proposal, calendars }: NothingToCopyStepProp
     <>
       <OnboardingHeading
         icon={{ glyph: <Clock size={22} strokeWidth={1.75} />, tone: "neutral" }}
-        title="Nothing to copy yet"
-        description={`${source.name} has no upcoming events. New events copy within a few minutes of being added.`}
+        title={t("Nothing to copy yet")}
+        description={t("{calendar} has no upcoming events. New events copy within a few minutes of being added.", {
+          calendar: source.name,
+        })}
       />
       {pairs.length > 0 && (
         <NavigationMenu>
@@ -51,11 +55,11 @@ export function NothingToCopyStep({ proposal, calendars }: NothingToCopyStepProp
           className="w-full justify-center"
         >
           <ExternalLink size={15} />
-          <ButtonText>Add a test event</ButtonText>
+          <ButtonText>{t("Add a test event")}</ButtonText>
         </ExternalLinkButton>
       )}
       <Button variant="ghost" className="w-full justify-center" onClick={() => setRun({ phase: "finished" })}>
-        <ButtonText>Go to home</ButtonText>
+        <ButtonText>{t("Go to home")}</ButtonText>
       </Button>
     </>
   );

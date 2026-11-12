@@ -8,6 +8,7 @@ import { TextLink } from "@/components/ui/primitives/text-link";
 import { Button, ButtonText } from "@/components/ui/primitives/button";
 import { hasConsentChoice, setAnalyticsConsent, subscribeToConsentChanges, track } from "@/lib/analytics";
 import { useGdprApplies } from "@/hooks/use-gdpr-applies";
+import { rich, useT } from "@/i18n";
 
 const CARD_ENTER = { opacity: 0, y: 10, filter: "blur(4px)" };
 const CARD_VISIBLE = { opacity: 1, y: 0, filter: "blur(0px)" };
@@ -50,6 +51,7 @@ const getChoiceSnapshot = (): boolean => hasConsentChoice();
 const getChoiceServerSnapshot = (): boolean => false;
 
 function CookieConsent() {
+  const t = useT();
   const gdprApplies = useGdprApplies();
   const choiceMade = useSyncExternalStore(
     subscribeToConsentChanges,
@@ -85,17 +87,20 @@ function CookieConsent() {
                   <ConsentBannerCard>
                     <ConsentBannerContent>
                       <Text as="span" size="sm">
-                        Can Keeper.sh{" "}
-                        <TextLink to="/privacy" size="sm">
-                          use cookies for analytics?
-                        </TextLink>
+                        {rich(t("Can SutraCode Calendar <link>use cookies for analytics?</link>"), {
+                          link: (chunk) => (
+                            <TextLink key="link" to="/privacy" size="sm">
+                              {chunk}
+                            </TextLink>
+                          ),
+                        })}
                       </Text>
                       <ConsentBannerActions>
                         <Button size="compact" variant="border" onClick={() => handleChoice(true)}>
-                          <ButtonText>Yes</ButtonText>
+                          <ButtonText>{t("Yes")}</ButtonText>
                         </Button>
                         <Button size="compact" variant="border" onClick={() => handleChoice(false)}>
-                          <ButtonText>No</ButtonText>
+                          <ButtonText>{t("No")}</ButtonText>
                         </Button>
                       </ConsentBannerActions>
                     </ConsentBannerContent>

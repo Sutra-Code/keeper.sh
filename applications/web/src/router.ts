@@ -4,6 +4,7 @@ import { createJsonFetcher } from "./lib/json-fetcher";
 import { getPublicRuntimeConfig, getServerPublicRuntimeConfig } from "./lib/runtime-config";
 import type { PublicRuntimeConfig } from "./lib/runtime-config";
 import { hasSessionCookie } from "./lib/session-cookie";
+import { readLocaleCookie } from "./i18n/locale";
 import { parseQueryString, stringifyQueryRecord } from "./lib/search-params";
 import type { AppRouterContext } from "./lib/router-context";
 
@@ -97,6 +98,7 @@ function buildRouterContext(
     },
     fetchApi: createApiFetcher(request),
     fetchWeb: createWebFetcher(request),
+    locale: readLocaleCookie(request ? request.headers.get("cookie") ?? "" : undefined),
     runtimeConfig: resolveRuntimeConfig(request),
     viteAssets: viteAssets ?? null,
   };

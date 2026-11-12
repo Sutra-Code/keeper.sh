@@ -23,6 +23,7 @@ import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { providerIcons } from "@/lib/providers";
 import { useMicrosoftApps } from "@/hooks/use-microsoft-apps";
 import type { MicrosoftApp } from "@/hooks/use-microsoft-apps";
+import { msg, rich, useT } from "@/i18n";
 
 type Provider = "google" | "outlook";
 
@@ -36,18 +37,18 @@ interface ProviderPreamble {
 const PROVIDER_PREAMBLES: Record<Provider, ProviderPreamble> = {
   google: { company: "Google", heading: "Google Calendar", label: "Google" },
   outlook: {
-    accountNotice: "A work or school account may need your admin to approve Keeper.sh first.",
+    accountNotice: msg("A work or school account may need your admin to approve SutraCode Calendar first."),
     company: "Microsoft",
-    heading: "Outlook or Microsoft 365",
+    heading: msg("Outlook or Microsoft 365"),
     label: "Outlook",
   },
 };
 
 const ACCESS_USES = [
-  { icon: Eye, label: "Reads when your events happen" },
-  { icon: CalendarPlus, label: "Adds busy blocks to calendars you pick" },
-  { icon: ShieldCheck, label: "Never edits or deletes your events" },
-  { icon: EyeOff, label: "Titles and guests stay private" },
+  { icon: Eye, label: msg("Reads when your events happen") },
+  { icon: CalendarPlus, label: msg("Adds busy blocks to calendars you pick") },
+  { icon: ShieldCheck, label: msg("Never edits or deletes your events") },
+  { icon: EyeOff, label: msg("Titles and guests stay private") },
 ];
 
 
@@ -75,6 +76,7 @@ interface PreambleLayoutProps {
 
 function PreambleLayout({ provider, onSubmit, picker, submitDisabled = false, children }: PreambleLayoutProps) {
   const { label, heading, company, accountNotice } = PROVIDER_PREAMBLES[provider];
+  const t = useT();
   return (
     <>
       <ProviderIconPair>
@@ -87,9 +89,9 @@ function PreambleLayout({ provider, onSubmit, picker, submitDisabled = false, ch
         />
       </ProviderIconPair>
       <div className="flex flex-col gap-1">
-        <Heading2 as="h1">Connect {heading}</Heading2>
+        <Heading2 as="h1">{t("Connect {provider}", { provider: t(heading) })}</Heading2>
         <Text size="sm" tone="muted" align="left">
-          {company} will ask for access to your calendars. This is what Keeper.sh does with it.
+          {t("{company} will ask for access to your calendars. This is what SutraCode Calendar does with it.", { company })}
         </Text>
       </div>
       <NavigationMenu>
@@ -98,12 +100,12 @@ function PreambleLayout({ provider, onSubmit, picker, submitDisabled = false, ch
             <NavigationMenuItemIcon>
               <Icon size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>{use}</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t(use)}</NavigationMenuItemLabel>
           </NavigationMenuItem>
         ))}
       </NavigationMenu>
       {accountNotice && (
-        <Text size="sm" tone="muted" align="left">{accountNotice}</Text>
+        <Text size="sm" tone="muted" align="left">{t(accountNotice)}</Text>
       )}
       <Divider />
       <form onSubmit={onSubmit} className="contents">
@@ -111,7 +113,7 @@ function PreambleLayout({ provider, onSubmit, picker, submitDisabled = false, ch
         <div className="flex items-stretch gap-2">
           <BackButton variant="border" size="standard" className="self-stretch justify-center px-3.5" />
           <Button type="submit" disabled={submitDisabled} className="grow justify-center">
-            <ButtonText>Continue to {company}</ButtonText>
+            <ButtonText>{t("Continue to {company}", { company })}</ButtonText>
           </Button>
         </div>
       </form>
@@ -131,21 +133,25 @@ interface MicrosoftAppPickerProps {
 }
 
 function NoMicrosoftApps() {
+  const t = useT();
   return (
     <Text size="sm" tone="muted" align="left">
-      No organization is set up yet. Add one in{" "}
-      <Link to="/dashboard/settings/microsoft-apps" className="underline">Settings → Microsoft Apps</Link>
-      {" "}first.
+      {rich(t("No organization is set up yet. Add one in <link>Settings → Microsoft Apps</link> first."), {
+        link: (chunk) => (
+          <Link key="link" to="/dashboard/settings/microsoft-apps" className="underline">{chunk}</Link>
+        ),
+      })}
     </Text>
   );
 }
 
 /** One Microsoft app per tenant: the user picks the organization the account belongs to. */
 function MicrosoftAppPicker({ apps, selected, onSelect }: MicrosoftAppPickerProps) {
+  const t = useT();
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="pb-2">
-        <Text size="sm" tone="muted" align="left">Organization of the account</Text>
+        <Text size="sm" tone="muted" align="left">{t("Organization of the account")}</Text>
       </legend>
       {apps.map((app) => (
         <label

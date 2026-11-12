@@ -10,6 +10,7 @@ import { changePassword } from "@/lib/auth";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { fetchAuthCapabilitiesWithApi } from "@/lib/auth-capabilities";
 import { resolveErrorMessage } from "@/utils/errors";
+import { msg, useT } from "@/i18n";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/settings/change-password",
@@ -30,6 +31,7 @@ function resolveInputTone(error: string | null): "error" | "neutral" {
 }
 
 function ChangePasswordPage() {
+  const t = useT();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -45,7 +47,7 @@ function ChangePasswordPage() {
     if (typeof current !== "string" || typeof newPassword !== "string" || typeof confirm !== "string") return;
 
     if (newPassword !== confirm) {
-      setError("Passwords do not match.");
+      setError(msg("Passwords do not match."));
       return;
     }
 
@@ -55,7 +57,7 @@ function ChangePasswordPage() {
         track(ANALYTICS_EVENTS.password_changed);
         navigate({ to: "/dashboard/settings" });
       } catch (err) {
-        setError(resolveErrorMessage(err, "Failed to change password."));
+        setError(resolveErrorMessage(err, msg("Failed to change password.")));
       }
     });
   };
@@ -67,15 +69,15 @@ function ChangePasswordPage() {
       <BackButton fallback="/dashboard/settings" />
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
-          <Input name="current" type="password" placeholder="Current password" tone={inputTone} />
-          <Input name="new" type="password" placeholder="New password" tone={inputTone} />
-          <Input name="confirm" type="password" placeholder="Confirm new password" tone={inputTone} />
+          <Input name="current" type="password" placeholder={t("Current password")} tone={inputTone} />
+          <Input name="new" type="password" placeholder={t("New password")} tone={inputTone} />
+          <Input name="confirm" type="password" placeholder={t("Confirm new password")} tone={inputTone} />
         </div>
-        {error && <Text size="sm" tone="danger">{error}</Text>}
+        {error && <Text size="sm" tone="danger">{t(error)}</Text>}
         <Divider />
         <Button type="submit" variant="highlight" className="w-full justify-center" disabled={isPending}>
           {isPending && <LoaderCircle size={16} className="animate-spin" />}
-          <ButtonText>{isPending ? "Saving..." : "Save"}</ButtonText>
+          <ButtonText>{isPending ? t("Saving...") : t("Save")}</ButtonText>
         </Button>
       </form>
     </div>

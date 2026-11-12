@@ -5,6 +5,7 @@ import { AnimatePresence, LazyMotion } from "motion/react";
 import * as m from "motion/react-m";
 import MapPin from "lucide-react/dist/esm/icons/map-pin";
 import { cn } from "@/utils/cn";
+import { useLocale, useT } from "@/i18n";
 import { loadMotionFeatures } from "@/lib/motion-features";
 import { ProviderIcon } from "@/components/ui/primitives/provider-icon";
 import { formatDayHeader, formatTimeRange } from "@/lib/time";
@@ -74,6 +75,8 @@ interface EventDetailPanelProps {
 
 function EventDetailPanel({ selection, onClose }: EventDetailPanelProps) {
   const { event, anchor, frame } = selection;
+  const t = useT();
+  const locale = useLocale();
   const panelRef = useRef<HTMLDivElement>(null);
   const [detailHeight, setDetailHeight] = useState(0);
 
@@ -188,7 +191,7 @@ function EventDetailPanel({ selection, onClose }: EventDetailPanelProps) {
                 {title}
               </EventText>
               <EventText size="xs" muted className="tabular-nums">
-                {formatDayHeader(resolveEventStartDay(event))} · {event.isAllDay ? ALL_DAY_LABEL : formatTimeRange(event.startTime, event.endTime)}
+                {formatDayHeader(resolveEventStartDay(event), locale)} · {event.isAllDay ? t(ALL_DAY_LABEL) : formatTimeRange(event.startTime, event.endTime)}
               </EventText>
               <div className="flex items-center gap-1.5">
                 <ProviderIcon provider={event.calendarProvider} size={13} />

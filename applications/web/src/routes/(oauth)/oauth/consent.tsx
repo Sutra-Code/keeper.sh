@@ -23,18 +23,19 @@ import {
 } from "@/lib/mcp-auth-flow";
 import { resolveErrorMessage } from "@/utils/errors";
 import { track, ANALYTICS_EVENTS } from "@/lib/analytics";
+import { msg, useT } from "@/i18n";
 
 type SearchParams = Record<string, string>;
 
 const SCOPE_LABELS: Record<string, string> = {
-  "keeper.read": "Read your Keeper data",
-  "keeper.write": "Create, edit and delete your events, and pause or trigger syncing",
-  "keeper.sources.read": "View your calendar sources",
-  "keeper.destinations.read": "View your sync destinations",
-  "keeper.mappings.read": "View your source-destination mappings",
-  "keeper.events.read": "View your calendar events",
-  "keeper.sync-status.read": "View sync status",
-  "offline_access": "Stay connected when you're away",
+  "keeper.read": msg("Read your SutraCode Calendar data"),
+  "keeper.write": msg("Create, edit and delete your events, and pause or trigger syncing"),
+  "keeper.sources.read": msg("View your calendar sources"),
+  "keeper.destinations.read": msg("View your sync destinations"),
+  "keeper.mappings.read": msg("View your source-destination mappings"),
+  "keeper.events.read": msg("View your calendar events"),
+  "keeper.sync-status.read": msg("View sync status"),
+  "offline_access": msg("Stay connected when you're away"),
 };
 
 const resolveScopeLabel = (scope: string): string => {
@@ -60,13 +61,13 @@ export const Route = createFileRoute("/(oauth)/oauth/consent")({
 
 function extractConsentErrorMessage(payload: unknown): string {
   if (typeof payload !== "object" || payload === null) {
-    return "Failed to complete consent";
+    return msg("Failed to complete consent");
   }
   if (!("message" in payload)) {
-    return "Failed to complete consent";
+    return msg("Failed to complete consent");
   }
   if (typeof payload.message !== "string") {
-    return "Failed to complete consent";
+    return msg("Failed to complete consent");
   }
   return payload.message;
 }
@@ -83,6 +84,7 @@ function extractConsentRedirectUrl(payload: unknown): string {
 
 function McpConsentPage() {
   const search = Route.useSearch();
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "loading">("idle");
   const authorizationSearch = getMcpAuthorizationSearch(search);
@@ -99,7 +101,7 @@ function McpConsentPage() {
   const scopes = scope
     .split(" ")
     .filter((value) => value.length > 0)
-    .map(resolveScopeLabel);
+    .map((value) => t(resolveScopeLabel(value)));
 
   const handleDecision = async (accept: boolean) => {
     setStatus("loading");
@@ -133,7 +135,7 @@ function McpConsentPage() {
       }
       window.location.assign(extractConsentRedirectUrl(payload));
     } catch (requestError) {
-      setError(resolveErrorMessage(requestError, "Failed to complete consent"));
+      setError(resolveErrorMessage(requestError, msg("Failed to complete consent")));
       setStatus("idle");
     }
   };
@@ -143,7 +145,7 @@ function McpConsentPage() {
       <ProviderIconPair>
         <Terminal className="size-full text-foreground-muted" />
       </ProviderIconPair>
-      <Heading2 as="h1">Authorize MCP access</Heading2>
+      <Heading2 as="h1">{t("Authorize MCP access")}</Heading2>
       {!isClientLoading && (
         <ConsentClientSummary
           clientName={readOAuthClientName(client)}
@@ -152,7 +154,7 @@ function McpConsentPage() {
       )}
       {scopes.length > 0 && <PermissionsList items={scopes} />}
       {error && (
-        <Text size="sm" tone="danger" align="center">{error}</Text>
+        <Text size="sm" tone="danger" align="center">{t(error)}</Text>
       )}
       <Divider />
       <div className="flex items-stretch gap-2">
@@ -165,7 +167,7 @@ function McpConsentPage() {
             void handleDecision(false);
           }}
         >
-          <ButtonText>Deny</ButtonText>
+          <ButtonText>{t("Deny")}</ButtonText>
         </Button>
         <Button
           type="button"
@@ -175,7 +177,7 @@ function McpConsentPage() {
             void handleDecision(true);
           }}
         >
-          <ButtonText>Allow</ButtonText>
+          <ButtonText>{t("Allow")}</ButtonText>
         </Button>
       </div>
     </>

@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext, useRouter } from "@tanstack/react-router";
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { SWRConfig } from "swr";
 import { Heading2 } from "@/components/ui/primitives/heading";
@@ -11,6 +11,7 @@ import type { AppRouterContext, ViteScript } from "@/lib/router-context";
 import { serializePublicRuntimeConfig } from "@/lib/runtime-config";
 import { clientStateScript } from "@/lib/client-state-script";
 import { AnalyticsScripts } from "@/components/analytics-scripts";
+import { I18nProvider, useLocale, useT } from "@/i18n";
 
 const NON_RETRYABLE_STATUSES = new Set([401, 403, 404]);
 
@@ -61,10 +62,21 @@ function ViteScriptTag({ script }: { script: ViteScript }) {
 }
 
 function RootComponent() {
-  const { runtimeConfig, viteAssets } = Route.useRouteContext();
+  const { locale } = Route.useRouteContext();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <I18nProvider initialLocale={locale}>
+      <RootDocument />
+    </I18nProvider>
+  );
+}
+
+function RootDocument() {
+  const { runtimeConfig, viteAssets } = Route.useRouteContext();
+  const locale = useLocale();
+
+  return (
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <HeadContent />
         <script
@@ -108,16 +120,29 @@ function RootComponent() {
   );
 }
 
-function ErrorFallback({ error }: ErrorComponentProps) {
+// The root error boundary replaces RootComponent, so it brings its own provider.
+function ErrorFallback(props: ErrorComponentProps) {
+  const router = useRouter();
+
+  return (
+    <I18nProvider initialLocale={router.options.context.locale}>
+      <ErrorFallbackContent {...props} />
+    </I18nProvider>
+  );
+}
+
+function ErrorFallbackContent({ error }: ErrorComponentProps) {
+  const t = useT();
+
   return (
     <div className="flex flex-col items-center justify-center min-h-dvh px-2 gap-3">
       <meta name="robots" content="noindex" />
-      <Heading2>Something went wrong</Heading2>
+      <Heading2>{t("Something went wrong")}</Heading2>
       <Text size="sm" tone="muted">
-        {resolveErrorMessage(error, "An unexpected error occurred.")}
+        {t(resolveErrorMessage(error, "An unexpected error occurred."))}
       </Text>
       <LinkButton to="/" variant="border" size="compact">
-        <ButtonText>Go home</ButtonText>
+        <ButtonText>{t("Go home")}</ButtonText>
       </LinkButton>
     </div>
   );

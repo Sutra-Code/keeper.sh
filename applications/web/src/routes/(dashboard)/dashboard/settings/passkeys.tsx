@@ -26,6 +26,7 @@ import { ErrorState } from "@/components/ui/primitives/error-state";
 import { Text } from "@/components/ui/primitives/text";
 import { resolveErrorMessage } from "@/utils/errors";
 import { fetchAuthCapabilitiesWithApi } from "@/lib/auth-capabilities";
+import { msg, useLocale, useT } from "@/i18n";
 
 export const Route = createFileRoute(
   "/(dashboard)/dashboard/settings/passkeys",
@@ -41,6 +42,8 @@ export const Route = createFileRoute(
 });
 
 function PasskeysPage() {
+  const t = useT();
+  const locale = useLocale();
   const { data: passkeys = [], error, mutate } = usePasskeys();
   const [deleteTarget, setDeleteTarget] = useState<Passkey | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
@@ -64,24 +67,24 @@ function PasskeysPage() {
       );
       track(ANALYTICS_EVENTS.passkey_deleted);
     } catch (err) {
-      setMutationError(resolveErrorMessage(err, "Failed to delete passkey."));
+      setMutationError(resolveErrorMessage(err, msg("Failed to delete passkey.")));
     }
   };
 
   return (
     <div className="flex flex-col gap-1.5">
       <BackButton fallback="/dashboard/settings" />
-      {error && <ErrorState message="Failed to load passkeys." onRetry={() => mutate()} />}
-      {mutationError && <Text size="sm" tone="danger">{mutationError}</Text>}
+      {error && <ErrorState message={t("Failed to load passkeys.")} onRetry={() => mutate()} />}
+      {mutationError && <Text size="sm" tone="danger">{t(mutationError)}</Text>}
       <NavigationMenu>
         {passkeys.map((passkey) => (
           <NavigationMenuButtonItem key={passkey.id} onClick={() => setDeleteTarget(passkey)}>
             <NavigationMenuItemIcon>
               <KeyRound size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>{passkey.name ?? "Passkey"}</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{passkey.name ?? t("Passkey")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing>
-              <Text size="sm" tone="muted">{formatDateShort(passkey.createdAt)}</Text>
+              <Text size="sm" tone="muted">{formatDateShort(passkey.createdAt, locale)}</Text>
             </NavigationMenuItemTrailing>
           </NavigationMenuButtonItem>
         ))}
@@ -89,16 +92,18 @@ function PasskeysPage() {
       </NavigationMenu>
       <Modal open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
         <ModalContent>
-          <ModalTitle>Delete passkey?</ModalTitle>
+          <ModalTitle>{t("Delete passkey?")}</ModalTitle>
           <ModalDescription>
-            This will remove "{deleteTarget?.name ?? "Passkey"}" from your account. You won't be able to use it to sign in anymore.
+            {t("This will remove \"{name}\" from your account. You won't be able to use it to sign in anymore.", {
+              name: deleteTarget?.name ?? t("Passkey"),
+            })}
           </ModalDescription>
           <ModalFooter>
             <Button variant="destructive" className="w-full justify-center" onClick={handleDelete}>
-              <ButtonText>Delete</ButtonText>
+              <ButtonText>{t("Delete")}</ButtonText>
             </Button>
             <Button variant="elevated" className="w-full justify-center" onClick={() => setDeleteTarget(null)}>
-              <ButtonText>Cancel</ButtonText>
+              <ButtonText>{t("Cancel")}</ButtonText>
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -114,6 +119,7 @@ function AddPasskeyButton({
   mutate: ReturnType<typeof usePasskeys>["mutate"];
   onError: (error: string | null) => void;
 }) {
+  const t = useT();
   const [isMutating, setIsMutating] = useState(false);
 
   const handleAdd = async () => {
@@ -124,7 +130,7 @@ function AddPasskeyButton({
       track(ANALYTICS_EVENTS.passkey_created);
       await mutate();
     } catch (err) {
-      onError(resolveErrorMessage(err, "Failed to add passkey."));
+      onError(resolveErrorMessage(err, msg("Failed to add passkey.")));
     } finally {
       setIsMutating(false);
     }
@@ -135,7 +141,7 @@ function AddPasskeyButton({
       <NavigationMenuItemIcon>
         <Plus size={15} />
       </NavigationMenuItemIcon>
-      <NavigationMenuItemLabel>{isMutating ? "Working..." : "Add Passkey"}</NavigationMenuItemLabel>
+      <NavigationMenuItemLabel>{isMutating ? t("Working...") : t("Add Passkey")}</NavigationMenuItemLabel>
     </NavigationMenuButtonItem>
   );
 }

@@ -1,6 +1,7 @@
 import { DEFAULT_FEED_SETTINGS } from "@keeper.sh/data-schemas";
 import { canAddMore } from "@/hooks/use-entitlements";
 import type { EntitlementLimit } from "@/hooks/use-entitlements";
+import { translate, type Locale } from "@/i18n";
 import type { CalendarSource } from "@/types/api";
 
 const resolvePickableCalendars = (sources: CalendarSource[]): CalendarSource[] =>
@@ -19,29 +20,34 @@ interface FeedDisclosureSettings {
 const SINGLE_DETAIL_COUNT = 1;
 const LAST_DETAIL_OFFSET = 1;
 
-const formatDetailList = (details: string[]): string => {
+const formatDetailList = (details: string[], locale: Locale): string => {
   if (details.length === SINGLE_DETAIL_COUNT) {
     return details[0] ?? "";
   }
 
   const leading = details.slice(0, details.length - LAST_DETAIL_OFFSET);
   const last = details[details.length - LAST_DETAIL_OFFSET] ?? "";
-  return `${leading.join(", ")} and ${last}`;
+  return translate(locale, "{leading} and {last}", { last, leading: leading.join(", ") });
 };
 
-const resolveFeedDisclosure = (settings: FeedDisclosureSettings): string => {
+const resolveFeedDisclosure = (
+  settings: FeedDisclosureSettings,
+  locale: Locale = "en",
+): string => {
   const details = [
-    "times",
-    ...(settings.includeEventName ? ["names"] : []),
-    ...(settings.includeEventDescription ? ["descriptions"] : []),
-    ...(settings.includeEventLocation ? ["locations"] : []),
+    translate(locale, "times"),
+    ...(settings.includeEventName ? [translate(locale, "names")] : []),
+    ...(settings.includeEventDescription ? [translate(locale, "descriptions")] : []),
+    ...(settings.includeEventLocation ? [translate(locale, "locations")] : []),
   ];
 
   if (details.length === SINGLE_DETAIL_COUNT) {
-    return "This link shares event times only.";
+    return translate(locale, "This link shares event times only.");
   }
 
-  return `This link shares event ${formatDetailList(details)}.`;
+  return translate(locale, "This link shares event {details}.", {
+    details: formatDetailList(details, locale),
+  });
 };
 
 const EVENT_NAME_TEMPLATE = "{{event_name}}";

@@ -1,3 +1,5 @@
+import { msg } from "@/i18n";
+
 export const providerIcons: Record<string, string> = {
   google: "/integrations/icon-google-calendar.svg",
   outlook: "/integrations/icon-outlook.svg",
@@ -35,16 +37,16 @@ interface ProviderCalendarApp {
 }
 
 const OUTLOOK_CALENDAR_APP: ProviderCalendarApp = {
-  label: "Open Outlook",
+  label: msg("Open Outlook"),
   url: "https://outlook.office.com/calendar",
 };
 
 const providerCalendarApps: Record<string, ProviderCalendarApp> = {
-  google: { label: "Open Google Calendar", url: "https://calendar.google.com" },
+  google: { label: msg("Open Google Calendar"), url: "https://calendar.google.com" },
   outlook: OUTLOOK_CALENDAR_APP,
   "microsoft-365": OUTLOOK_CALENDAR_APP,
-  icloud: { label: "Open iCloud Calendar", url: "https://www.icloud.com/calendar" },
-  fastmail: { label: "Open Fastmail", url: "https://app.fastmail.com/calendar" },
+  icloud: { label: msg("Open iCloud Calendar"), url: "https://www.icloud.com/calendar" },
+  fastmail: { label: msg("Open Fastmail"), url: "https://app.fastmail.com/calendar" },
 };
 
 export function providerCalendarApp(provider: string): ProviderCalendarApp | null {

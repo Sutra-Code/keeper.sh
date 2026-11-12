@@ -17,6 +17,7 @@ import { providerAppPasswordUrl, providerAuthorizeId } from "@/lib/providers";
 import { invalidateAccountsAndSources } from "@/lib/swr";
 import { resolveErrorMessage } from "@/utils/errors";
 import type { CalendarAccount } from "@/types/api";
+import { msg, rich, useT } from "@/i18n";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/accounts/$accountId/reconnect")({
   component: ReconnectAccountPage,
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/(dashboard)/dashboard/accounts/$accountId
  * pinned to this account; CalDAV replaces the stored password in place.
  */
 function ReconnectAccountPage() {
+  const t = useT();
   const { accountId } = Route.useParams();
   const { data: account, isLoading, error, mutate } = useSWR<CalendarAccount>(
     `/api/accounts/${accountId}`,
@@ -53,7 +55,7 @@ function ReconnectAccountPage() {
     <div className="flex flex-col gap-1.5 lg:h-full">
       <StickyPageHeader className="gap-1.5">
         <BackButton fallback={`/dashboard/accounts/${accountId}`} />
-        <DashboardHeading1>Restore access</DashboardHeading1>
+        <DashboardHeading1>{t("Restore access")}</DashboardHeading1>
       </StickyPageHeader>
       <PageBody className="gap-1.5">
         {account.authType === "caldav" ? (
@@ -67,13 +69,15 @@ function ReconnectAccountPage() {
 }
 
 function OAuthReconnect({ account }: { account: CalendarAccount }) {
+  const t = useT();
   const authorizeProvider = providerAuthorizeId(account.provider);
 
   if (!authorizeProvider) {
     return (
       <Text size="sm" tone="danger" className="px-0.5">
-        {account.providerName} accounts cannot be reconnected automatically. Remove the account
-        and add it again.
+        {t("{provider} accounts cannot be reconnected automatically. Remove the account and add it again.", {
+          provider: account.providerName,
+        })}
       </Text>
     );
   }
@@ -90,21 +94,25 @@ function OAuthReconnect({ account }: { account: CalendarAccount }) {
   return (
     <>
       <DashboardSection
-        title="Reconnect with the provider"
-        description={`Keeper.sh lost authorization for ${account.accountLabel}. Signing in again restores it — you will be asked to grant the same permissions, and no calendars or settings are lost.`}
+        title={t("Reconnect with the provider")}
+        description={t("SutraCode Calendar lost authorization for {account}. Signing in again restores it — you will be asked to grant the same permissions, and no calendars or settings are lost.", {
+          account: account.accountLabel,
+        })}
       />
       <Button onClick={handleReconnect} className="w-full justify-center">
-        <ButtonText>Continue to {account.providerName}</ButtonText>
+        <ButtonText>{t("Continue to {provider}", { provider: account.providerName })}</ButtonText>
       </Button>
       <Text size="sm" tone="muted" className="px-0.5">
-        Sign in as {account.accountLabel}. Choosing a different account will connect that one
-        instead, and leave this account disconnected.
+        {t("Sign in as {account}. Choosing a different account will connect that one instead, and leave this account disconnected.", {
+          account: account.accountLabel,
+        })}
       </Text>
     </>
   );
 }
 
 function CalDAVReconnect({ account }: { account: CalendarAccount }) {
+  const t = useT();
   const navigate = useNavigate();
   const { mutate: globalMutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
@@ -117,7 +125,7 @@ function CalDAVReconnect({ account }: { account: CalendarAccount }) {
 
     const password = new FormData(event.currentTarget).get("password");
     if (typeof password !== "string" || password.length === 0) {
-      setError("A password is required");
+      setError(msg("A password is required"));
       return;
     }
 
@@ -129,7 +137,7 @@ function CalDAVReconnect({ account }: { account: CalendarAccount }) {
           body: JSON.stringify({ password }),
         });
       } catch (err) {
-        setError(resolveErrorMessage(err, "Those credentials were rejected"));
+        setError(resolveErrorMessage(err, msg("Those credentials were rejected")));
         return;
       }
 
@@ -141,14 +149,14 @@ function CalDAVReconnect({ account }: { account: CalendarAccount }) {
   return (
     <>
       <DashboardSection
-        title="Enter a new app password"
-        description="The server and username stay as they are — only the password is replaced. We check it against the server before saving it."
+        title={t("Enter a new app password")}
+        description={t("The server and username stay as they are — only the password is replaced. We check it against the server before saving it.")}
       />
       {appPasswordUrl && (
         <Text size="sm" tone="muted" className="px-0.5">
-          Changing your account password revokes every app-specific password.{" "}
-          <ExternalTextLink href={appPasswordUrl}>Generate a new one</ExternalTextLink>, then
-          paste it below.
+          {rich(t("Changing your account password revokes every app-specific password. <link>Generate a new one</link>, then paste it below."), {
+            link: (chunk) => <ExternalTextLink key="link" href={appPasswordUrl}>{chunk}</ExternalTextLink>,
+          })}
         </Text>
       )}
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -170,16 +178,16 @@ function CalDAVReconnect({ account }: { account: CalendarAccount }) {
           <Input
             name="password"
             type="password"
-            placeholder="App-Specific Password"
+            placeholder={t("App-Specific Password")}
             autoFocus
             required
           />
         </div>
-        {error && <Text size="sm" tone="danger">{error}</Text>}
+        {error && <Text size="sm" tone="danger">{t(error)}</Text>}
         <Divider />
         <Button type="submit" className="w-full justify-center" disabled={isPending}>
           {isPending && <LoaderCircle size={16} className="animate-spin" />}
-          <ButtonText>{isPending ? "Checking…" : "Restore access"}</ButtonText>
+          <ButtonText>{isPending ? t("Checking…") : t("Restore access")}</ButtonText>
         </Button>
       </form>
     </>

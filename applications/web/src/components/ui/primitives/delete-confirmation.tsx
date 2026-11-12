@@ -7,6 +7,7 @@ import {
   ModalFooter,
   ModalTitle,
 } from "./modal";
+import { msg, useT } from "@/i18n";
 
 interface DeleteConfirmationProps {
   title: string;
@@ -18,8 +19,8 @@ interface DeleteConfirmationProps {
 }
 
 function resolveDeleteLabel(deleting: boolean): string {
-  if (deleting) return "Deleting...";
-  return "Delete";
+  if (deleting) return msg("Deleting...");
+  return msg("Delete");
 }
 
 export function DeleteConfirmation({
@@ -30,6 +31,8 @@ export function DeleteConfirmation({
   deleting,
   onConfirm,
 }: DeleteConfirmationProps) {
+  const t = useT();
+
   return (
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent>
@@ -38,10 +41,10 @@ export function DeleteConfirmation({
         <ModalFooter>
           <Button variant="destructive" className="w-full justify-center" onClick={onConfirm} disabled={deleting}>
             {deleting && <LoaderCircle size={16} className="animate-spin" />}
-            <ButtonText>{resolveDeleteLabel(deleting)}</ButtonText>
+            <ButtonText>{t(resolveDeleteLabel(deleting))}</ButtonText>
           </Button>
           <Button variant="elevated" className="w-full justify-center" onClick={() => onOpenChange(false)}>
-            <ButtonText>Cancel</ButtonText>
+            <ButtonText>{t("Cancel")}</ButtonText>
           </Button>
         </ModalFooter>
       </ModalContent>

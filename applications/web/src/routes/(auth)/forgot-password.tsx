@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/primitives/input";
 import { Text } from "@/components/ui/primitives/text";
 import { TextLink } from "@/components/ui/primitives/text-link";
 import { AuthSwitchPrompt } from "@/features/auth/components/auth-switch-prompt";
+import { msg, rich, useT } from "@/i18n";
 
 export const Route = createFileRoute("/(auth)/forgot-password")({
   loader: async ({ context }) => {
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/(auth)/forgot-password")({
 function ForgotPasswordPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   if (status === "sent") return <SuccessState />;
 
@@ -43,7 +45,7 @@ function ForgotPasswordPage() {
       track(ANALYTICS_EVENTS.password_reset_requested);
       setStatus("sent");
     } catch (err) {
-      setError(resolveErrorMessage(err, "Failed to send reset email"));
+      setError(resolveErrorMessage(err, msg("Failed to send reset email")));
       setStatus("idle");
     }
   };
@@ -51,26 +53,29 @@ function ForgotPasswordPage() {
   return (
     <>
       <div className="flex flex-col py-2">
-        <Heading2 as="span" className="text-center">Reset password</Heading2>
+        <Heading2 as="span" className="text-center">{t("Reset password")}</Heading2>
         <Text size="sm" tone="muted" align="center">
-          Enter your email and we&apos;ll send you a link to reset your password.
+          {t("Enter your email and we'll send you a link to reset your password.")}
         </Text>
       </div>
-      {error && <Text size="sm" tone="danger" align="center">{error}</Text>}
+      {error && <Text size="sm" tone="danger" align="center">{t(error)}</Text>}
       <form onSubmit={handleSubmit} className="contents">
         <Input name="email" type="email" placeholder="johndoe+keeper@example.com" required autoComplete="email" />
         <Button type="submit" className="w-full justify-center" disabled={status === "loading"}>
-          <ButtonText>Send reset link</ButtonText>
+          <ButtonText>{t("Send reset link")}</ButtonText>
         </Button>
       </form>
       <AuthSwitchPrompt>
-        Remember your password? <TextLink to="/login">Sign in</TextLink>
+        {rich(t("Remember your password? <link>Sign in</link>"), {
+          link: (chunk) => <TextLink key="link" to="/login">{chunk}</TextLink>,
+        })}
       </AuthSwitchPrompt>
     </>
   );
 }
 
 function SuccessState() {
+  const t = useT();
   return (
     <>
       <div className="flex flex-col items-center gap-3 py-2">
@@ -78,13 +83,13 @@ function SuccessState() {
           <Mail size={24} className="text-foreground-muted" />
         </div>
         <div className="flex flex-col">
-          <Heading2 as="span" className="text-center">Check your email</Heading2>
+          <Heading2 as="span" className="text-center">{t("Check your email")}</Heading2>
           <Text size="sm" tone="muted" align="center">
-            If an account exists with that email, we sent you a password reset link.
+            {t("If an account exists with that email, we sent you a password reset link.")}
           </Text>
         </div>
       </div>
-      <TextLink to="/login">Back to sign in</TextLink>
+      <TextLink to="/login">{t("Back to sign in")}</TextLink>
     </>
   );
 }

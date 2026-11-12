@@ -12,7 +12,7 @@ const icsRejection = (body: unknown, status = 400) => new HttpError(status, "/ap
 describe("describeOAuthConnectFailure", () => {
   it("explains that a work account needs admin approval", () => {
     expect(describeOAuthConnectFailure("admin-approval-required")).toBe(
-      "Your organization needs an admin to approve Keeper.sh before this account can connect.",
+      "Your organization needs an admin to approve SutraCode Calendar before this account can connect.",
     );
   });
 

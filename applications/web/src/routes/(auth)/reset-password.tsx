@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/primitives/input";
 import { Text } from "@/components/ui/primitives/text";
 import { TextLink } from "@/components/ui/primitives/text-link";
 import { AuthSwitchPrompt } from "@/features/auth/components/auth-switch-prompt";
+import { msg, useT } from "@/i18n";
 
 type SearchParams = { token?: string };
 
@@ -38,6 +39,7 @@ function ResetPasswordPage() {
 function ResetPasswordForm({ token }: { token: string }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,7 +49,7 @@ function ResetPasswordForm({ token }: { token: string }) {
 
     if (!password || !confirmPassword) return;
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(msg("Passwords do not match."));
       return;
     }
 
@@ -59,7 +61,7 @@ function ResetPasswordForm({ token }: { token: string }) {
       track(ANALYTICS_EVENTS.password_reset_completed);
       setStatus("success");
     } catch (err) {
-      setError(resolveErrorMessage(err, "Failed to reset password"));
+      setError(resolveErrorMessage(err, msg("Failed to reset password")));
       setStatus("idle");
     }
   };
@@ -69,17 +71,17 @@ function ResetPasswordForm({ token }: { token: string }) {
   return (
     <>
       <div className="flex flex-col py-2">
-        <Heading2 as="span" className="text-center">Set new password</Heading2>
+        <Heading2 as="span" className="text-center">{t("Set new password")}</Heading2>
         <Text size="sm" tone="muted" align="center">
-          Enter your new password below.
+          {t("Enter your new password below.")}
         </Text>
       </div>
-      {error && <Text size="sm" tone="danger" align="center">{error}</Text>}
+      {error && <Text size="sm" tone="danger" align="center">{t(error)}</Text>}
       <form onSubmit={handleSubmit} className="contents">
         <Input
           name="password"
           type="password"
-          placeholder="New password"
+          placeholder={t("New password")}
           required
           minLength={8}
           maxLength={128}
@@ -88,14 +90,14 @@ function ResetPasswordForm({ token }: { token: string }) {
         <Input
           name="confirmPassword"
           type="password"
-          placeholder="Confirm password"
+          placeholder={t("Confirm password")}
           required
           minLength={8}
           maxLength={128}
           autoComplete="new-password"
         />
         <Button type="submit" className="w-full justify-center" disabled={status === "loading"}>
-          <ButtonText>Reset password</ButtonText>
+          <ButtonText>{t("Reset password")}</ButtonText>
         </Button>
       </form>
     </>
@@ -103,6 +105,7 @@ function ResetPasswordForm({ token }: { token: string }) {
 }
 
 function SuccessState() {
+  const t = useT();
   return (
     <>
       <div className="flex flex-col items-center gap-3 py-2">
@@ -110,30 +113,31 @@ function SuccessState() {
           <CircleCheck size={24} className="text-foreground-muted" />
         </div>
         <div className="flex flex-col">
-          <Heading2 as="span" className="text-center">Password reset</Heading2>
+          <Heading2 as="span" className="text-center">{t("Password reset")}</Heading2>
           <Text size="sm" tone="muted" align="center">
-            Your password has been successfully reset.
+            {t("Your password has been successfully reset.")}
           </Text>
         </div>
       </div>
       <AuthSwitchPrompt>
-        <TextLink to="/login">Back to sign in</TextLink>
+        <TextLink to="/login">{t("Back to sign in")}</TextLink>
       </AuthSwitchPrompt>
     </>
   );
 }
 
 function InvalidTokenState() {
+  const t = useT();
   return (
     <>
       <div className="flex flex-col py-2">
-        <Heading2 as="span" className="text-center">Invalid link</Heading2>
+        <Heading2 as="span" className="text-center">{t("Invalid link")}</Heading2>
         <Text size="sm" tone="muted" align="center">
-          This password reset link is invalid or has expired.
+          {t("This password reset link is invalid or has expired.")}
         </Text>
       </div>
       <AuthSwitchPrompt>
-        <TextLink to="/forgot-password">Request a new link</TextLink>
+        <TextLink to="/forgot-password">{t("Request a new link")}</TextLink>
       </AuthSwitchPrompt>
     </>
   );

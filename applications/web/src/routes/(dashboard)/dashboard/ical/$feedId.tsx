@@ -56,20 +56,21 @@ import {
 } from "@/utils/ical-feeds";
 import { resolveErrorMessage } from "@/utils/errors";
 import type { CalendarSource } from "@/types/api";
+import { msg, rich, useLocale, useT } from "@/i18n";
 
 export const Route = createFileRoute("/(dashboard)/dashboard/ical/$feedId")({
   component: ICalFeedDetailPage,
 });
 
 const SETTING_TOGGLES = [
-  { field: "includeEventDescription", label: "Include Event Description" },
-  { field: "includeEventLocation", label: "Include Event Location" },
-  { field: "excludeAllDayEvents", label: "Exclude All Day Events" },
+  { field: "includeEventDescription", label: msg("Include Event Description") },
+  { field: "includeEventLocation", label: msg("Include Event Location") },
+  { field: "excludeAllDayEvents", label: msg("Exclude All Day Events") },
 ] as const;
 
 const FILTER_TOGGLES = [
-  { field: "excludeFocusTime", label: "Exclude Focus Time" },
-  { field: "excludeOutOfOffice", label: "Exclude Out of Office" },
+  { field: "excludeFocusTime", label: msg("Exclude Focus Time") },
+  { field: "excludeOutOfOffice", label: msg("Exclude Out of Office") },
 ] as const;
 
 type ToggleField =
@@ -79,6 +80,8 @@ type ToggleField =
 const TEMPLATE_VARIABLES = { calendar_name: "Calendar Name", event_name: "Event Name" };
 
 function ICalFeedDetailPage() {
+  const t = useT();
+  const locale = useLocale();
   const { feedId } = Route.useParams();
   const navigate = useNavigate();
   const { revalidateEntitlements } = useMutateEntitlements();
@@ -126,7 +129,7 @@ function ICalFeedDetailPage() {
         body: JSON.stringify(mergedPatch),
       }),
       (patchError) => {
-        setMutationError(resolveErrorMessage(patchError, "Failed to update this feed."));
+        setMutationError(resolveErrorMessage(patchError, msg("Failed to update this feed.")));
         void mutate();
       },
     );
@@ -134,7 +137,7 @@ function ICalFeedDetailPage() {
 
   const handleRename = (name: string) => {
     if (!icalFeedNameSchema.allows(name)) {
-      setMutationError("Feed name cannot be empty.");
+      setMutationError(msg("Feed name cannot be empty."));
       return;
     }
     setMutationError(null);
@@ -177,7 +180,7 @@ function ICalFeedDetailPage() {
       );
       await mutate();
     } catch (err) {
-      setMutationError(resolveErrorMessage(err, "Failed to update this feed's calendars."));
+      setMutationError(resolveErrorMessage(err, msg("Failed to update this feed's calendars.")));
     }
   };
 
@@ -190,7 +193,7 @@ function ICalFeedDetailPage() {
       await revalidateEntitlements();
       await navigate({ to: "/dashboard/ical" });
     } catch (err) {
-      setMutationError(resolveErrorMessage(err, "Failed to delete this feed."));
+      setMutationError(resolveErrorMessage(err, msg("Failed to delete this feed.")));
       setDeleting(false);
       setDeleteOpen(false);
     }
@@ -206,16 +209,16 @@ function ICalFeedDetailPage() {
         <FeedHeader name={feed.name} />
       </StickyPageHeader>
       <PageBody className="gap-1.5">
-        {mutationError && <Text size="sm" tone="danger">{mutationError}</Text>}
+        {mutationError && <Text size="sm" tone="danger">{t(mutationError)}</Text>}
         <DashboardSection
-          title="Feed Link"
-          description="Subscribe to this link in any calendar app."
+          title={t("Feed Link")}
+          description={t("Subscribe to this link in any calendar app.")}
         />
         <FeedLinkField url={feed.icalUrl} onError={setMutationError} />
-        <Text size="sm" tone="muted" className="px-0.5">{resolveFeedDisclosure(feed)}</Text>
+        <Text size="sm" tone="muted" className="px-0.5">{resolveFeedDisclosure(feed, locale)}</Text>
         <DashboardSection
-          title="Feed Name"
-          description="Click below to rename this feed. Only you can see this name."
+          title={t("Feed Name")}
+          description={t("Click below to rename this feed. Only you can see this name.")}
         />
         <NavigationMenu>
           <NavigationMenuEditableItem value={feed.name} onCommit={handleRename} />
@@ -226,10 +229,13 @@ function ICalFeedDetailPage() {
           onToggle={handleToggleCalendar}
         />
         <DashboardSection
-          title="Feed Settings"
-          description={<>Choose which event details this link includes. Use <Text as="span" size="sm" className="text-template inline">{"{{calendar_name}}"}</Text> or <Text as="span" size="sm" className="text-template inline">{"{{event_name}}"}</Text> in text fields for dynamic values.</>}
+          title={t("Feed Settings")}
+          description={rich(
+            t("Choose which event details this link includes. Use <var>{{calendar_name}}</var> or <var>{{event_name}}</var> in text fields for dynamic values."),
+            { var: (chunk) => <Text key={chunk} as="span" size="sm" className="text-template inline">{chunk}</Text> },
+          )}
         />
-        <PremiumGate locked={locked} hint="Feed settings are a Pro feature.">
+        <PremiumGate locked={locked} hint={t("Feed settings are a Pro feature.")}>
           <NavigationMenu>
             <EventNameTemplateItem
               customEventName={feed.customEventName}
@@ -241,7 +247,7 @@ function ICalFeedDetailPage() {
               disabled={locked}
               onCheckedChange={handleToggleEventName}
             >
-              <NavigationMenuItemLabel>Include Event Name</NavigationMenuItemLabel>
+              <NavigationMenuItemLabel>{t("Include Event Name")}</NavigationMenuItemLabel>
             </NavigationMenuToggleItem>
             {SETTING_TOGGLES.map(({ field, label }) => (
               <NavigationMenuToggleItem
@@ -250,16 +256,16 @@ function ICalFeedDetailPage() {
                 disabled={locked}
                 onCheckedChange={() => handleToggleSetting(field)}
               >
-                <NavigationMenuItemLabel>{label}</NavigationMenuItemLabel>
+                <NavigationMenuItemLabel>{t(label)}</NavigationMenuItemLabel>
               </NavigationMenuToggleItem>
             ))}
           </NavigationMenu>
         </PremiumGate>
         <DashboardSection
-          title="Event Filters"
-          description="Leave these event types out of this link."
+          title={t("Event Filters")}
+          description={t("Leave these event types out of this link.")}
         />
-        <PremiumGate locked={locked} hint="Event filters are a Pro feature.">
+        <PremiumGate locked={locked} hint={t("Event filters are a Pro feature.")}>
           <NavigationMenu>
             {FILTER_TOGGLES.map(({ field, label }) => (
               <NavigationMenuToggleItem
@@ -268,23 +274,22 @@ function ICalFeedDetailPage() {
                 disabled={locked}
                 onCheckedChange={() => handleToggleSetting(field)}
               >
-                <NavigationMenuItemLabel>{label}</NavigationMenuItemLabel>
+                <NavigationMenuItemLabel>{t(label)}</NavigationMenuItemLabel>
               </NavigationMenuToggleItem>
             ))}
           </NavigationMenu>
         </PremiumGate>
         <DashboardSection
-          title="Feed Information"
-          description="View details about this feed."
+          title={t("Feed Information")}
+          description={t("View details about this feed.")}
         />
         <NavigationMenu>
-          <MetadataRow label="Resource Type" value={feed.isDefault ? "Default Feed" : "Feed"} />
-          <MetadataRow label="Created" value={formatDate(feed.createdAt)} />
+          <MetadataRow label={t("Resource Type")} value={feed.isDefault ? t("Default Feed") : t("Feed")} />
+          <MetadataRow label={t("Created")} value={formatDate(feed.createdAt, locale)} />
         </NavigationMenu>
         {feed.isDefault && (
           <Text size="sm" tone="muted" className="px-0.5">
-            Your default feed cannot be deleted. Create another feed to share a narrower set of
-            calendars.
+            {t("Your default feed cannot be deleted. Create another feed to share a narrower set of calendars.")}
           </Text>
         )}
         {!feed.isDefault && (
@@ -294,12 +299,12 @@ function ICalFeedDetailPage() {
                 <NavigationMenuItemIcon>
                   <Trash2 size={15} className="text-destructive" />
                 </NavigationMenuItemIcon>
-                <Text size="sm" tone="danger">Delete Feed</Text>
+                <Text size="sm" tone="danger">{t("Delete Feed")}</Text>
               </NavigationMenuButtonItem>
             </NavigationMenu>
             <DeleteConfirmation
-              title="Delete feed?"
-              description={`This permanently removes "${feed.name}". Calendar apps subscribed to its link will stop receiving events.`}
+              title={t("Delete feed?")}
+              description={t("This permanently removes \"{name}\". Calendar apps subscribed to its link will stop receiving events.", { name: feed.name })}
               open={deleteOpen}
               onOpenChange={setDeleteOpen}
               deleting={deleting}
@@ -327,13 +332,14 @@ function FeedLinkField({
   url: string;
   onError: (message: string) => void;
 }) {
+  const t = useT();
   const { copied, markCopied } = useCopiedState();
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      onError("Failed to copy this feed's link. Select it above to copy it manually.");
+      onError(msg("Failed to copy this feed's link. Select it above to copy it manually."));
       return;
     }
     track(ANALYTICS_EVENTS.ical_link_copied);
@@ -347,7 +353,7 @@ function FeedLinkField({
         variant="border"
         className="shrink-0 aspect-square"
         onClick={() => { void handleCopy(); }}
-        aria-label="Copy feed link"
+        aria-label={t("Copy feed link")}
       >
         <ButtonIcon>
           <CopyStateIcon copied={copied} />
@@ -373,11 +379,12 @@ function EventNameTemplateItem({
   disabled: boolean;
   onCommit: (customEventName: string) => void;
 }) {
+  const t = useT();
   const template = customEventName || "Busy";
 
   return (
     <NavigationMenuEditableTemplateItem
-      label="Event Name"
+      label={t("Event Name")}
       disabled={disabled}
       value={template}
       renderInput={(live) => <TemplateText template={live} variables={TEMPLATE_VARIABLES} />}
@@ -396,9 +403,9 @@ function EventNameTemplateItem({
 
 function resolveCalendarsDescription(isDefault: boolean): string {
   if (isDefault) {
-    return "Select which calendars contribute events to this feed. Calendars you import later join this feed automatically.";
+    return msg("Select which calendars contribute events to this feed. Calendars you import later join this feed automatically.");
   }
-  return "Select which calendars contribute events to this feed.";
+  return msg("Select which calendars contribute events to this feed.");
 }
 
 function CalendarsSection({
@@ -410,15 +417,16 @@ function CalendarsSection({
   selected: Set<string>;
   onToggle: (calendarId: string, checked: boolean) => void;
 }) {
+  const t = useT();
   const { data: sources } = useSWR<CalendarSource[]>("/api/sources");
   const calendars = useMemo(() => resolvePickableCalendars(sources ?? []), [sources]);
 
   return (
     <>
-      <DashboardSection title="Calendars" description={resolveCalendarsDescription(isDefault)} />
+      <DashboardSection title={t("Calendars")} description={t(resolveCalendarsDescription(isDefault))} />
       <NavigationMenu>
         {calendars.length === 0 ? (
-          <NavigationMenuEmptyItem>No calendars available</NavigationMenuEmptyItem>
+          <NavigationMenuEmptyItem>{t("No calendars available")}</NavigationMenuEmptyItem>
         ) : (
           calendars.map((calendar) => (
             <NavigationMenuCheckboxItem

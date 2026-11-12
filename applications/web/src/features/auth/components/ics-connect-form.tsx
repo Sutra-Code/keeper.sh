@@ -11,10 +11,11 @@ import { Divider } from "@/components/ui/primitives/divider";
 import { Input } from "@/components/ui/primitives/input";
 import { Text } from "@/components/ui/primitives/text";
 import { describeIcsFeedFailure, type FeedFailureCopy } from "@/lib/connect-failures";
+import { msg, useT } from "@/i18n";
 
 function resolveSubmitLabel(pending: boolean): string {
-  if (pending) return "Subscribing...";
-  return "Subscribe";
+  if (pending) return msg("Subscribing...");
+  return msg("Subscribe");
 }
 
 export function ICSFeedForm() {
@@ -23,6 +24,7 @@ export function ICSFeedForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<FeedFailureCopy | null>(null);
   const [requiresAuth, setRequiresAuth] = useState(false);
+  const t = useT();
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,7 +41,7 @@ export function ICSFeedForm() {
       const password = formData.get("password");
 
       if (!username || !password) {
-        setError({ hint: null, message: "Username and password are required for authenticated feeds." });
+        setError({ hint: null, message: msg("Username and password are required for authenticated feeds.") });
         return;
       }
 
@@ -49,7 +51,7 @@ export function ICSFeedForm() {
         parsed.password = encodeURIComponent(String(password));
         url = parsed.toString();
       } catch {
-        setError({ hint: null, message: "Invalid URL." });
+        setError({ hint: null, message: msg("Invalid URL.") });
         return;
       }
     }
@@ -89,15 +91,15 @@ export function ICSFeedForm() {
           id="feed-url"
           name="feed-url"
           type="url"
-          placeholder="Calendar link"
+          placeholder={t("Calendar link")}
           disabled={isPending}
           tone={error ? "error" : "neutral"}
           aria-invalid={Boolean(error)}
         />
-        {error && <Text size="sm" tone="danger">{error.message}</Text>}
-        {error?.hint && <Text size="sm" tone="muted">{error.hint}</Text>}
+        {error && <Text size="sm" tone="danger">{t(error.message)}</Text>}
+        {error?.hint && <Text size="sm" tone="muted">{t(error.hint)}</Text>}
         <Checkbox checked={requiresAuth} onCheckedChange={setRequiresAuth}>
-          Requires authentication
+          {t("Requires authentication")}
         </Checkbox>
         {requiresAuth && (
           <>
@@ -105,14 +107,14 @@ export function ICSFeedForm() {
               id="username"
               name="username"
               type="text"
-              placeholder="Username"
+              placeholder={t("Username")}
               disabled={isPending}
             />
             <Input
               id="password"
               name="password"
               type="password"
-              placeholder="Password"
+              placeholder={t("Password")}
               disabled={isPending}
             />
           </>
@@ -123,7 +125,7 @@ export function ICSFeedForm() {
         <BackButton variant="border" size="standard" className="self-stretch justify-center px-3.5" />
         <Button type="submit" className="grow justify-center" disabled={isPending}>
           {isPending && <LoaderCircle size={16} className="animate-spin" />}
-          <ButtonText>{resolveSubmitLabel(isPending)}</ButtonText>
+          <ButtonText>{t(resolveSubmitLabel(isPending))}</ButtonText>
         </Button>
       </div>
     </form>

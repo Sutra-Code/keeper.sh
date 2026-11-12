@@ -1,3 +1,7 @@
+import { translate, type Translate } from "@/i18n";
+
+const inEnglish: Translate = (text, values) => translate("en", text, values);
+
 interface MappingPair {
   sourceCalendarId: string;
   destinationCalendarId: string;
@@ -35,6 +39,7 @@ const isReverseOf = (mapping: MappingPair) => (other: MappingPair): boolean =>
 const describeSyncPairs = (
   mappings: MappingPair[],
   calendarsById: ReadonlyMap<string, PairedCalendar>,
+  t: Translate = inEnglish,
 ): SyncPairSummary[] => {
   const summaries = new Map<string, SyncPairSummary>();
 
@@ -45,12 +50,13 @@ const describeSyncPairs = (
     if (summaries.has(key) || !source || !destination) continue;
 
     const twoWay = mappings.some(isReverseOf(mapping));
-    const joiner = twoWay ? "and" : "to";
     const senders = twoWay ? [source, destination] : [source];
     summaries.set(key, {
       busyOnly: senders.every(({ excludeEventName }) => excludeEventName),
       key,
-      label: `${source.name} ${joiner} ${destination.name}`,
+      label: twoWay
+        ? t("{first} and {second}", { first: source.name, second: destination.name })
+        : t("{source} to {destination}", { destination: destination.name, source: source.name }),
       sourceCalendarId: mapping.sourceCalendarId,
     });
   }
@@ -60,14 +66,24 @@ const describeSyncPairs = (
 
 const describeProposal = <TCalendar extends NamedCalendar>(
   { origin, destination, forward, backward }: SyncDirections<TCalendar>,
+  t: Translate = inEnglish,
 ): string => {
   if (forward && backward) {
-    return `${origin.name} and ${destination.name} will each show you as busy whenever the other has an event.`;
+    return t("{first} and {second} will each show you as busy whenever the other has an event.", {
+      first: origin.name,
+      second: destination.name,
+    });
   }
   if (forward) {
-    return `${destination.name} will show you as busy whenever ${origin.name} has an event.`;
+    return t("{shown} will show you as busy whenever {source} has an event.", {
+      shown: destination.name,
+      source: origin.name,
+    });
   }
-  return `${origin.name} will show you as busy whenever ${destination.name} has an event.`;
+  return t("{shown} will show you as busy whenever {source} has an event.", {
+    shown: origin.name,
+    source: destination.name,
+  });
 };
 
 export { describeProposal, describeSyncPairs };

@@ -8,6 +8,9 @@ import Mail from "lucide-react/dist/esm/icons/mail";
 import Cookie from "lucide-react/dist/esm/icons/cookie";
 import Trash2 from "lucide-react/dist/esm/icons/trash-2";
 import Building2 from "lucide-react/dist/esm/icons/building-2";
+import Languages from "lucide-react/dist/esm/icons/languages";
+import { LanguageSwitcher } from "@/i18n/language-switcher";
+import { msg, useLocale, useT } from "@/i18n";
 import { pluralize } from "@/lib/pluralize";
 import { BackButton } from "@/components/ui/primitives/back-button";
 import { useSession } from "@/hooks/use-session";
@@ -51,6 +54,8 @@ export const Route = createFileRoute("/(dashboard)/dashboard/settings/")({
 });
 
 function SettingsPage() {
+  const t = useT();
+  const locale = useLocale();
   const { authCapabilities, commercialMode } = Route.useLoaderData();
   const { user } = useSession();
   const navigate = useNavigate();
@@ -87,7 +92,7 @@ function SettingsPage() {
       provider: "oidc",
     });
     if (error) {
-      setOidcLinkError(error.message ?? "Failed to start linking.");
+      setOidcLinkError(error.message ?? msg("Failed to start linking."));
       setIsLinkingOidc(false);
     }
   };
@@ -100,7 +105,7 @@ function SettingsPage() {
           <NavigationMenuItemIcon>
             <Mail size={15} />
           </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>{accountLabel}</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t(accountLabel)}</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing>
             <Text size="sm" tone="muted" className="truncate">{accountValue}</Text>
           </NavigationMenuItemTrailing>
@@ -112,7 +117,7 @@ function SettingsPage() {
             <NavigationMenuItemIcon>
               <Lock size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>Change Password</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t("Change Password")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing />
           </NavigationMenuLinkItem>
         )}
@@ -121,10 +126,10 @@ function SettingsPage() {
             <NavigationMenuItemIcon>
               <KeyRound size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>Passkeys</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t("Passkeys")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing>
               <Text size="sm" tone="muted">
-                {pluralize(passkeys.length, "passkey", "passkeys")}
+                {pluralize(passkeys.length, t("passkey"), t("passkeys"), locale)}
               </Text>
             </NavigationMenuItemTrailing>
           </NavigationMenuLinkItem>
@@ -138,11 +143,11 @@ function SettingsPage() {
               <LogIn size={15} />
             </NavigationMenuItemIcon>
             <NavigationMenuItemLabel>
-              {`Link ${resolveOidcProviderName(authCapabilities)}`}
+              {t("Link {provider}", { provider: resolveOidcProviderName(authCapabilities) })}
             </NavigationMenuItemLabel>
             <NavigationMenuItemTrailing>
               <Text size="sm" tone="muted">
-                {hasOidcAccount ? "Linked" : "Not linked"}
+                {hasOidcAccount ? t("Linked") : t("Not linked")}
               </Text>
             </NavigationMenuItemTrailing>
           </NavigationMenuButtonItem>
@@ -152,10 +157,10 @@ function SettingsPage() {
           <NavigationMenuItemIcon>
             <KeySquare size={15} />
           </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>API Tokens</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("API Tokens")}</NavigationMenuItemLabel>
           <NavigationMenuItemTrailing>
             <Text size="sm" tone="muted">
-              {pluralize(apiTokens.length, "token", "tokens")}
+              {pluralize(apiTokens.length, t("token"), t("tokens"), locale)}
             </Text>
           </NavigationMenuItemTrailing>
         </NavigationMenuLinkItem>
@@ -164,22 +169,33 @@ function SettingsPage() {
             <NavigationMenuItemIcon>
               <Building2 size={15} />
             </NavigationMenuItemIcon>
-            <NavigationMenuItemLabel>Microsoft Apps</NavigationMenuItemLabel>
+            <NavigationMenuItemLabel>{t("Microsoft Apps")}</NavigationMenuItemLabel>
             <NavigationMenuItemTrailing>
               <Text size="sm" tone="muted">
-                {pluralize(microsoftAppSettings.apps.length, "organization", "organizations")}
+                {pluralize(microsoftAppSettings.apps.length, t("organization"), t("organizations"), locale)}
               </Text>
             </NavigationMenuItemTrailing>
           </NavigationMenuLinkItem>
         )}
       </NavigationMenu>
-      {oidcLinkError && <Text size="sm" tone="danger">{oidcLinkError}</Text>}
+      {oidcLinkError && <Text size="sm" tone="danger">{t(oidcLinkError)}</Text>}
+      <NavigationMenu>
+        <NavigationMenuItem>
+          <NavigationMenuItemIcon>
+            <Languages size={15} />
+          </NavigationMenuItemIcon>
+          <NavigationMenuItemLabel>{t("Language")}</NavigationMenuItemLabel>
+          <NavigationMenuItemTrailing>
+            <LanguageSwitcher />
+          </NavigationMenuItemTrailing>
+        </NavigationMenuItem>
+      </NavigationMenu>
       <NavigationMenu>
         <NavigationMenuToggleItem checked={analyticsConsent} onCheckedChange={handleAnalyticsToggle}>
           <NavigationMenuItemIcon>
             <Cookie size={15} />
           </NavigationMenuItemIcon>
-          <NavigationMenuItemLabel>Analytics Cookies</NavigationMenuItemLabel>
+          <NavigationMenuItemLabel>{t("Analytics Cookies")}</NavigationMenuItemLabel>
         </NavigationMenuToggleItem>
       </NavigationMenu>
       <NavigationMenu>
@@ -187,7 +203,7 @@ function SettingsPage() {
           <NavigationMenuItemIcon>
             <Trash2 size={15} className="text-destructive" />
           </NavigationMenuItemIcon>
-          <Text size="sm" tone="danger">Delete Account</Text>
+          <Text size="sm" tone="danger">{t("Delete Account")}</Text>
         </NavigationMenuButtonItem>
       </NavigationMenu>
       <DeleteAccountModal

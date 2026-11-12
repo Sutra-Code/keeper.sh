@@ -1,4 +1,4 @@
-import { pluralize } from "./pluralize";
+import { translate, type Locale } from "@/i18n";
 
 const IMPORTED_STATUS = "imported";
 const ALREADY_CONNECTED_STATUS = "already_connected";
@@ -15,15 +15,24 @@ const readStatuses = (calendars: unknown): string[] => {
 const countStatus = (statuses: string[], status: string): number =>
   statuses.filter((candidate) => candidate === status).length;
 
-const resolveCalDAVImportNotice = (calendars: unknown): string | null => {
+const resolveCalDAVImportNotice = (calendars: unknown, locale: Locale = "en"): string | null => {
   const statuses = readStatuses(calendars);
   const alreadyConnected = countStatus(statuses, ALREADY_CONNECTED_STATUS);
   if (alreadyConnected === 0) return null;
 
   const imported = countStatus(statuses, IMPORTED_STATUS);
-  if (imported === 0) return "Already connected";
+  if (imported === 0) return translate(locale, "Already connected");
 
-  return `${pluralize(imported, "calendar")} added, ${alreadyConnected} already connected`;
+  if (imported === 1) {
+    return translate(locale, "{imported} calendar added, {alreadyConnected} already connected", {
+      alreadyConnected,
+      imported,
+    });
+  }
+  return translate(locale, "{imported} calendars added, {alreadyConnected} already connected", {
+    alreadyConnected,
+    imported,
+  });
 };
 
 export { resolveCalDAVImportNotice };

@@ -3,6 +3,7 @@ import { syncStateAtom, syncStatusLabelAtom, syncStatusShimmerAtom } from "@/sta
 import { Text } from "@/components/ui/primitives/text";
 import { ShimmerText } from "@/components/ui/primitives/shimmer-text";
 import { Tooltip } from "@/components/ui/primitives/tooltip";
+import { useT } from "@/i18n";
 import { clampPercent, resolveSyncPercent } from "./sync-status-helpers";
 
 export function SyncProgressCircle({ percent }: { percent: number }) {
@@ -53,7 +54,8 @@ function SyncProgressIndicator() {
 }
 
 function SyncStatusLabel() {
-  const label = useAtomValue(syncStatusLabelAtom);
+  const t = useT();
+  const label = t(useAtomValue(syncStatusLabelAtom));
   const isSyncing = useAtomValue(syncStatusShimmerAtom);
 
   if (isSyncing) {
