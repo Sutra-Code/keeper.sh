@@ -1,6 +1,7 @@
 import { isKeeperMcpEnabledAuth, createAuth } from "@keeper.sh/auth";
 import { createDatabase } from "@keeper.sh/database";
 import env, { resolveApiBaseUrl } from "./env";
+import { createApiTokenUserResolver } from "./api-token";
 import { createKeeperMcpHandler } from "./mcp-handler";
 import { createKeeperMcpToolset } from "./toolset";
 import { withWideEvent } from "./utils/middleware";
@@ -27,6 +28,7 @@ const handleMcpRequest = createKeeperMcpHandler({
   mcpPublicUrl: env.MCP_PUBLIC_URL,
   apiBaseUrl: resolveApiBaseUrl(env),
   toolset: keeperMcpToolset,
+  resolveApiTokenUserId: createApiTokenUserResolver(database),
 });
 
 export { auth, database, env, handleMcpRequest, keeperMcpToolset, withWideEvent };

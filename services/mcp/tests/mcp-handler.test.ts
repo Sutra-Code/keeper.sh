@@ -241,3 +241,70 @@ describe("createKeeperMcpHandler", () => {
     ).rejects.toThrow("database unavailable");
   });
 });
+
+const listToolsRequest = (token: string) =>
+  new Request("https://mcp.keeper.sh/mcp", {
+    body: JSON.stringify({ id: "1", jsonrpc: "2.0", method: "tools/list" }),
+    headers: {
+      Accept: "application/json, text/event-stream",
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+
+const createHandler = (resolveApiTokenUserId: (token: string) => Promise<string | null>) =>
+  createKeeperMcpHandler({
+    auth: {
+      api: {
+        getMcpSession: () => Promise.reject(new Error("OAuth must not be consulted for an API token")),
+      },
+    },
+    mcpPublicUrl: "https://mcp.keeper.sh",
+    apiBaseUrl: "https://keeper.sh",
+    toolset,
+    resolveApiTokenUserId,
+  });
+
+describe("createKeeperMcpHandler with API tokens", () => {
+  it("lists the tools for a valid API token without the OAuth flow", async () => {
+    const seen: string[] = [];
+    const handler = createHandler((token) => {
+      seen.push(token);
+      return Promise.resolve("user-1");
+    });
+
+    const response = await handler(listToolsRequest("kpr_valid"));
+
+    expect(response.status).toBe(200);
+    expect(seen).toEqual(["kpr_valid"]);
+    const { result } = listToolsResultSchema.parse(await response.json());
+    expect(result.tools.length).toBeGreaterThan(0);
+  });
+
+  it("rejects an API token that is unknown or expired", async () => {
+    const handler = createHandler(() => Promise.resolve(null));
+
+    const response = await handler(listToolsRequest("kpr_revoked"));
+
+    expect(response.status).toBe(401);
+  });
+
+  it("keeps using OAuth for a bearer token that is not an API token", async () => {
+    const handler = createKeeperMcpHandler({
+      auth: {
+        api: {
+          getMcpSession: () => Promise.resolve({ scopes: "keeper.read", userId: "user-2" }),
+        },
+      },
+      mcpPublicUrl: "https://mcp.keeper.sh",
+      apiBaseUrl: "https://keeper.sh",
+      toolset,
+      resolveApiTokenUserId: () => Promise.reject(new Error("not an API token")),
+    });
+
+    const response = await handler(listToolsRequest("oauth-access-token"));
+
+    expect(response.status).toBe(200);
+  });
+});

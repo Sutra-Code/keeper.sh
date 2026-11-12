@@ -1,6 +1,8 @@
 import { KEEPER_API_READ_SCOPE } from "@keeper.sh/auth";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
+import { isApiToken } from "./api-token";
+import type { ApiTokenUserResolver } from "./api-token";
 import type { KeeperMcpToolDefinition, KeeperMcpToolset, KeeperToolContext } from "./toolset";
 import { widelog } from "./utils/logging";
 
@@ -43,6 +45,8 @@ interface CreateKeeperMcpHandlerOptions {
   mcpPublicUrl: string;
   apiBaseUrl: string;
   toolset: KeeperMcpToolset;
+  /** When set, a `kpr_` API token is accepted as the bearer token alongside OAuth. */
+  resolveApiTokenUserId?: ApiTokenUserResolver;
   serverInfo?: {
     name: string;
     version: string;
@@ -72,10 +76,35 @@ const extractBearerToken = (headers: Headers): string | null => {
   return authHeader.slice("Bearer ".length);
 };
 
+const resolveApiTokenSession = async (
+  resolveApiTokenUserId: ApiTokenUserResolver,
+  bearerToken: string,
+): Promise<McpSessionResolution> => {
+  const userId = await resolveApiTokenUserId(bearerToken);
+
+  if (!userId) {
+    return { authenticated: false };
+  }
+
+  // An API token carries its owner's full access; the API enforces it per call.
+  return {
+    authenticated: true,
+    session: { bearerToken, scopes: KEEPER_API_READ_SCOPE, userId },
+  };
+};
+
 const resolveMcpSession = async (
   auth: KeeperMcpAuth,
   headers: Headers,
+  resolveApiTokenUserId: ApiTokenUserResolver | undefined,
 ): Promise<McpSessionResolution> => {
+  const apiToken = extractBearerToken(headers);
+
+  if (resolveApiTokenUserId && apiToken && isApiToken(apiToken)) {
+    widelog.set("auth.method", "api_token");
+    return resolveApiTokenSession(resolveApiTokenUserId, apiToken);
+  }
+
   try {
     const session = await auth.api.getMcpSession({ headers });
 
@@ -190,6 +219,7 @@ const createKeeperMcpHandler = ({
   mcpPublicUrl,
   apiBaseUrl,
   toolset,
+  resolveApiTokenUserId,
   serverInfo = {
     name: "keeper",
     version: "1.0.0",
@@ -230,7 +260,7 @@ const createKeeperMcpHandler = ({
         },
       );
 
-    const sessionResult = await resolveMcpSession(auth, request.headers);
+    const sessionResult = await resolveMcpSession(auth, request.headers, resolveApiTokenUserId);
 
     if (!sessionResult.authenticated) {
       return unauthorizedResponse();
